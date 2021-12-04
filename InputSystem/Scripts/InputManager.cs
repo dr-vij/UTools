@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace ViJTools
 {
-    public class InputManager : MonoBehaviour
+    public class InputManager : SingletonMonobehaviour<InputManager>
     {
         private string mUnsopportedPointerMsg = "Unknown control device.Cannot read its position.check if control device is Pointer";
 
