@@ -9,7 +9,7 @@ namespace ViJTools
     /// <summary>
     /// Interaction object. it is used for all interaction subscriptions
     /// </summary>
-    public class InteractionObject : MonoBehaviour
+    public class InteractionObject : DisposableMonobehaviour
     {
         private Dictionary<InteractionEvent, List<InteractionSubscribtion>> mAllSubscribtions = new Dictionary<InteractionEvent, List<InteractionSubscribtion>>();
 
@@ -36,8 +36,9 @@ namespace ViJTools
             }
         }
 
-        protected virtual void Awake()
+        protected override void OnAwake()
         {
+            base.OnAwake();
             //We check here that only one InteractionObject existst on this gameobject
             var interactionObjects = GetComponentsInChildren<InteractionObject>();
             if (interactionObjects.Where(c => c.transform == transform).Count() != 1)

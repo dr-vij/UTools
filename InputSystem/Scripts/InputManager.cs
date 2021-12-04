@@ -21,6 +21,9 @@ namespace ViJTools
         private InputDataContainer mInputData = new InputDataContainer();
         private Actions mActions;
         private List<Camera> mCameras = new List<Camera>();
+        private CameraTracer mCameraTracer = new CameraTracer();
+
+        public CameraTracer CameraTracer => mCameraTracer;
 
         public void RegisterCamera(Camera cam)
         {
@@ -159,6 +162,11 @@ namespace ViJTools
                 //TODO: Drag here
                 TextDebugger.Instance.Log($"Drag performed at: {mInputData.PointerCurrentPosition}, prev position: {mInputData.PointerPreviousPosition}, currend delta: {mInputData.PointerCurrentDelta}");
             }
+        }
+
+        public InteractionObject GetInteractionObject(Vector2 screenPosition)
+        {
+
         }
 
         #region Helpers

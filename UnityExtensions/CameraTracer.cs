@@ -27,6 +27,10 @@ namespace ViJTools
             }
         }
 
+        public RaycastHit[] Hits => mHits;
+
+        public int CurrentHitCount => mCurrentHitCount;
+
         #region LAYERS/MASKS
 
         private int mRaycastLayerMask;
@@ -100,7 +104,7 @@ namespace ViJTools
 
         #endregion
 
-        public CameraTracer(int raycastCapacity)
+        public CameraTracer(int raycastCapacity = 100)
         {
             RaycastCapacity = raycastCapacity;
         }
