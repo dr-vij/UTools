@@ -164,11 +164,6 @@ namespace ViJTools
             }
         }
 
-        public InteractionObject GetInteractionObject(Vector2 screenPosition)
-        {
-
-        }
-
         #region Helpers
 
         private bool TryReadPointerPosition(InputAction.CallbackContext context, out Vector2 pointerPosition)

@@ -7,7 +7,7 @@ namespace ViJTools
     /// <summary>
     /// This object is used to remove object from interaction hierarchy
     /// </summary>
-    public class InteractionObjectIgnorer : MonoBehaviour
+    public class InteractionIgnorer : MonoBehaviour
     {
     }
 }

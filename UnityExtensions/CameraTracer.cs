@@ -13,23 +13,25 @@ namespace ViJTools
         //SETTINGS
         private int mRaycastCapacity;
 
-        //BUFFER DATA
-        private RaycastHit[] mHits;
-        private int mCurrentHitCount;
-
         public int RaycastCapacity
         {
             get => mRaycastCapacity;
             set
             {
                 mRaycastCapacity = value;
-                RefreshCapacityArray();
+                RefreshArrayCapacity();
             }
         }
+        //END OF SETTINGS
+
+        //BUFFER DATA
+        private RaycastHit[] mHits;
+        private int mCurrentHitCount;
 
         public RaycastHit[] Hits => mHits;
 
         public int CurrentHitCount => mCurrentHitCount;
+        //END OF BUFFER DATA
 
         #region LAYERS/MASKS
 
@@ -104,17 +106,23 @@ namespace ViJTools
 
         #endregion
 
+        /// <summary>
+        /// The capacity of the tracer is the maximum count of hits it can find. Increase number if you have a lot of colliders under pointers
+        /// </summary>
+        /// <param name="raycastCapacity"></param>
         public CameraTracer(int raycastCapacity = 100)
         {
             RaycastCapacity = raycastCapacity;
         }
 
-        private void RefreshCapacityArray()
-        {
-            Array.Resize(ref mHits, mRaycastCapacity);
-        }
+        private void RefreshArrayCapacity() => Array.Resize(ref mHits, mRaycastCapacity);
 
-        public void TraceCamera(Vector2 position, Camera camera)
+        /// <summary>
+        /// Traces camera and saves result to current mHits. The count of hits is under mCurrentHitCount
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="camera"></param>
+        public void TraceCamera3D(Vector2 position, Camera camera)
         {
             var mask = mRaycastLayerMask & camera.cullingMask & ~Physics.IgnoreRaycastLayer;
             var ray = camera.ScreenPointToRay(position, Camera.MonoOrStereoscopicEye.Mono);
@@ -127,6 +135,29 @@ namespace ViJTools
             Array.Sort(mHits, 0, mCurrentHitCount, HitDistanceComparer);
         }
 
+        /// <summary>
+        /// Searches nearest to camera interaction object under position
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="camera"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public bool TryGetInteractionObject(Vector2 position, Camera camera, out InteractionObject result)
+        {
+            TraceCamera3D(position, camera);
+            for (int i = 0; i < mCurrentHitCount; i++)
+                if (!mHits[i].transform.HasInteractionIgnorer() && mHits[i].transform.TryFindInteractionObject(out result))
+                    return true;
+
+            result = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if there is UI under given screen pos
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
         public bool IsOverUI(Vector2 pos)
         {
             var eventData = new PointerEventData(EventSystem.current) { position = pos };

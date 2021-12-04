@@ -11,14 +11,14 @@ namespace ViJTools
     /// </summary>
     public class InteractionObject : DisposableMonobehaviour
     {
-        private Dictionary<InteractionEvent, List<InteractionSubscribtion>> mAllSubscribtions = new Dictionary<InteractionEvent, List<InteractionSubscribtion>>();
+        private Dictionary<ObjectInteractionEvent, List<InteractionSubscribtion>> mAllSubscribtions = new Dictionary<ObjectInteractionEvent, List<InteractionSubscribtion>>();
 
-        public bool HasEventSubscribtion(InteractionEvent evt)
+        public bool HasEventSubscribtion(ObjectInteractionEvent evt)
         {
             return mAllSubscribtions.TryGetValue(evt, out var subscribtions) && subscribtions.Count != 0;
         }
 
-        public void Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
+        public void Subscribe<TEventArgs>(ObjectInteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
         {
             if (!mAllSubscribtions.TryGetValue(evt, out var subscribtions))
             {
@@ -28,7 +28,7 @@ namespace ViJTools
             subscribtions.Add(new InteractionSubscribtion(handler));
         }
 
-        public void Unsubscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
+        public void Unsubscribe<TEventArgs>(ObjectInteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
         {
             if (mAllSubscribtions.TryGetValue(evt, out var subscribtions))
             {
