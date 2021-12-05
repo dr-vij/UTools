@@ -36,6 +36,16 @@ namespace ViJTools
             }
         }
 
+        public void RunEvent(ObjectInteractionEvent evt, InteractionEventArgs args)
+        {
+            if (mAllSubscribtions.TryGetValue(evt, out var handlers))
+            {
+                args.Handle(this);
+                foreach(var handler in handlers)
+                    handler.Handler.DynamicInvoke(this, args);
+            }
+        }
+
         protected override void OnAwake()
         {
             base.OnAwake();

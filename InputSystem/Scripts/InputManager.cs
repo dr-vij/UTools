@@ -10,7 +10,7 @@ namespace ViJTools
 {
     public class InputManager : SingletonMonobehaviour<InputManager>
     {
-        private string mUnsopportedPointerMsg = "Unknown control device.Cannot read its position.check if control device is Pointer";
+        private string mUnsopportedPointerMsg = "Unknown control device. Cannot read its position. check if control device is Pointer";
 
         /// <summary>
         /// This parameters decides how far should drag perform to call Drag. If distance is less, press will be performed
@@ -81,6 +81,22 @@ namespace ViJTools
 
                 //TODO: PointerDown here and capture dragged object
                 //TextDebugger.Instance.LogColored($"Pointer down at {mInputData.PointerCurrentPosition}", Color.blue);
+                var screenCoord = mInputData.PointerDownPosition;
+                var args = new PointerInteractionEventArgs(screenCoord);
+                if (!mCameraTracer.IsOverUI(screenCoord))
+                {
+                    foreach(var camera in mCameras)
+                    {
+                        if (mCameraTracer.CanBeTraced(camera, screenCoord))
+                        {
+                            if (mCameraTracer.TryTraceInteractionObject(camera, screenCoord, out var interactionObject))
+                            {
+                                interactionObject.RunEvent(ObjectInteractionEvents.ObjectPointerGrabStartEvent, args);
+                            }
+                        }
+                    }
+                }
+                //------------------------------------
             }
             else
             {

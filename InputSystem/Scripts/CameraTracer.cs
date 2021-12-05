@@ -6,37 +6,8 @@ using UnityEngine.EventSystems;
 
 namespace ViJTools
 {
-    public class CameraTracer
+    public class LayerSettingsContainer
     {
-        public readonly static IComparer<RaycastHit> HitDistanceComparer = new FuncComparer<RaycastHit>((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
-
-        //SETTINGS
-        private int mRaycastCapacity;
-
-        public int RaycastCapacity
-        {
-            get => mRaycastCapacity;
-            set
-            {
-                mRaycastCapacity = value;
-                RefreshArrayCapacity();
-            }
-        }
-        //END OF SETTINGS
-
-        //BUFFER DATA
-        private RaycastHit[] mHits;
-        private int mCurrentHitCount;
-
-        public RaycastHit[] Hits => mHits;
-
-        public int CurrentHitCount => mCurrentHitCount;
-        //END OF BUFFER DATA
-
-        #region LAYERS/MASKS
-
-        private int mRaycastLayerMask;
-
         /// <summary>
         /// Raycast mask, it is used to filter raycasts with camera
         /// The default value is -1 that means all layers
@@ -104,7 +75,42 @@ namespace ViJTools
         /// <param name="mask"></param>
         public void RemoveMask(int mask) => RaycastMask &= ~mask;
 
-        #endregion
+        public int GetMaskForCamera(Camera camera)
+        {
+            return RaycastMask & camera.cullingMask & ~Physics.IgnoreRaycastLayer;
+        }
+    }
+
+    public class CameraTracer
+    {
+        public readonly static IComparer<RaycastHit> HitDistanceComparer = new FuncComparer<RaycastHit>((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+
+        private RaycastHit[] mHits;
+
+        private int mCurrentHitCount;
+
+        private int mRaycastCapacity;
+
+        private LayerSettingsContainer mLayerSettings = new LayerSettingsContainer();
+
+        public int RaycastCapacity
+        {
+            get => mRaycastCapacity;
+            set
+            {
+                mRaycastCapacity = value;
+                if (mHits == null)
+                    mHits = new RaycastHit[mRaycastCapacity];
+                else if (mRaycastCapacity != mHits.Length)
+                    Array.Resize(ref mHits, mRaycastCapacity);
+            }
+        }
+
+        public RaycastHit[] Hits => mHits;
+
+        public int CurrentHitCount => mCurrentHitCount;
+
+        public LayerSettingsContainer LayerSettings => mLayerSettings;
 
         /// <summary>
         /// The capacity of the tracer is the maximum count of hits it can find. Increase number if you have a lot of colliders under pointers
@@ -115,8 +121,6 @@ namespace ViJTools
             RaycastCapacity = raycastCapacity;
         }
 
-        private void RefreshArrayCapacity() => Array.Resize(ref mHits, mRaycastCapacity);
-
         /// <summary>
         /// Traces camera and saves result to current mHits. The count of hits is under mCurrentHitCount
         /// </summary>
@@ -124,7 +128,7 @@ namespace ViJTools
         /// <param name="camera"></param>
         public void TraceCamera3D(Vector2 position, Camera camera)
         {
-            var mask = mRaycastLayerMask & camera.cullingMask & ~Physics.IgnoreRaycastLayer;
+            var mask = LayerSettings.GetMaskForCamera(camera);
             var ray = camera.ScreenPointToRay(position, Camera.MonoOrStereoscopicEye.Mono);
             var raycastLimitPlane = new Plane(-camera.transform.forward, camera.transform.position + camera.transform.forward * camera.farClipPlane);
             raycastLimitPlane.Raycast(ray, out var rayDistance);
@@ -142,7 +146,7 @@ namespace ViJTools
         /// <param name="camera"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public bool TryGetInteractionObject(Vector2 position, Camera camera, out InteractionObject result)
+        public bool TryTraceInteractionObject(Camera camera, Vector2 position, out InteractionObject result)
         {
             TraceCamera3D(position, camera);
             for (int i = 0; i < mCurrentHitCount; i++)
@@ -164,6 +168,17 @@ namespace ViJTools
             var results = new List<RaycastResult>();
             EventSystem.current.RaycastAll(eventData, results);
             return results.Count > 0;
+        }
+
+        /// <summary>
+        /// Checks if screen coord is inside camera rect and camera is enabled
+        /// </summary>
+        /// <param name="camera"></param>
+        /// <param name="coord"></param>
+        /// <returns></returns>
+        public bool CanBeTraced(Camera camera, Vector2 coord)
+        {
+            return camera.pixelRect.Contains(coord) && camera.enabled && camera.gameObject.activeInHierarchy;
         }
     }
 }

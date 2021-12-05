@@ -165,6 +165,27 @@ namespace ViJTools
         }
 
         /// <summary>
+        /// Unified grab/grab end subscription
+        /// </summary>
+        /// <param name="interactionObject"></param>
+        /// <param name="pointerGrabStartHandler"></param>
+        /// <param name="pointerGrabEndHandler"></param>
+        /// <returns></returns>
+        public static DisposableAction SubscribePointerGrabEvent(this InteractionObject interactionObject,
+            EventHandler<PointerInteractionEventArgs> pointerGrabStartHandler,
+            EventHandler<PointerInteractionEventArgs> pointerGrabEndHandler)
+        {
+            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerGrabStartEvent, pointerGrabStartHandler);
+            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerGrabEndEvent, pointerGrabEndHandler);
+
+            return new DisposableAction(() =>
+            {
+                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerGrabStartEvent, pointerGrabStartHandler);
+                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerGrabEndEvent, pointerGrabEndHandler);
+            });
+        }
+
+        /// <summary>
         /// Unified pointer move subscription
         /// </summary>
         /// <param name="interactionObject"></param>

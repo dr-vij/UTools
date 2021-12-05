@@ -12,7 +12,22 @@ namespace ViJTools
     {
         public InteractionObject HandleObject { get; private set; }
 
-        public bool IsHandled { get; private set; }
+        public bool IsHandled  { get; private set; }
+
+        public Camera InteractionCamera { get; private set; }
+
+        public InteractionEventArgs(Camera camera = null)
+        {
+            InteractionCamera = camera;
+        }
+
+        public void SetCamera(Camera camera)
+        {
+            if (InteractionCamera == null)
+                InteractionCamera = camera;
+            else
+                Debug.LogError("event args camera cannot be changed");
+        }
 
         public void Handle(InteractionObject interactionObject)
         {
@@ -31,7 +46,7 @@ namespace ViJTools
     {
         public Vector2 Position { get; private set; }
 
-        public PointerInteractionEventArgs(Vector2 position) => Position = position;
+        public PointerInteractionEventArgs(Vector2 position, Camera camera = null) : base(camera) => Position = position;
     }
 
     /// <summary>
@@ -41,6 +56,6 @@ namespace ViJTools
     {
         public Vector2 PrevPosition { get; private set; }
 
-        public PointerDragInteractionEventArgs(Vector2 position, Vector2 prevPosition) : base(position) => PrevPosition = prevPosition;
+        public PointerDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Camera camera = null) : base(position, camera) => PrevPosition = prevPosition;
     }
 }
