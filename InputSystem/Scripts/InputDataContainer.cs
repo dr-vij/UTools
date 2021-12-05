@@ -9,9 +9,11 @@ namespace ViJTools
         private bool mIsPointerDownTriggered = false;
         private bool mIsDragTriggered = false;
 
-        public Vector2 PointerDownPosition = Vector2.zero;
-        public Vector2 PointerCurrentPosition = Vector2.zero;
-        public Vector2 PointerPreviousPosition = Vector2.zero;
+        public Vector2 PointerDownPosition { get; set; } = Vector2.zero;
+        public Vector2 PointerCurrentPosition { get; set; } = Vector2.zero;
+        public Vector2 PointerPreviousPosition { get; set; } = Vector2.zero;
+        public Camera InteractionCamera { get; set; } = default;
+        public InteractionObject InteractionObject { get; set; } = default;
 
         public Vector2 PointerCurrentDelta => PointerCurrentPosition - PointerPreviousPosition;
 
@@ -51,6 +53,9 @@ namespace ViJTools
             PointerDownPosition = Vector2.zero;
             PointerCurrentPosition = Vector2.zero;
             PointerPreviousPosition = Vector2.zero;
+
+            InteractionObject = null;
+            InteractionCamera = null;
         }
     }
 }

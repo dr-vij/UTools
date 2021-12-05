@@ -966,6 +966,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ae4914a38ec849b697084ec176879b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mObjects:
+  - {fileID: 552539378}
+  - {fileID: 1026530403}
+  - {fileID: 221516829}
+  - {fileID: 1742684097}
 --- !u!1001 &5682534210861878121
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -979,7 +984,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3138675635625551689, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5451040460782190259, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
+      propertyPath: m_fontSize
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5451040460782190259, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 6317434166826486129, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_Pivot.x
@@ -995,7 +1008,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6317434166826486129, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.8
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 6317434166826486129, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1081,7 +1094,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1728285502329229932, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
       propertyPath: mRaiseDragOnUpdates
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1728285502329229932, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
       propertyPath: mDragOrPressTriggerDistance

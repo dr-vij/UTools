@@ -11,25 +11,41 @@ public class InputTest : MonoBehaviour
     private void Awake()
     {
         InputManager.Instance.RegisterCamera(Camera.main);
-
         foreach (var obj in mObjects)
         {
             obj.SubscribePointerDragEvent(OnDragStart, OnDrag, OnDragEnd);
+            obj.SubscribePointerPressEvent(OnPress);
+            obj.SubscribePointerGrabEvent(OnGrabStart, OnGrabEnd);
         }
+    }
+
+    private void OnPress(object sender, PointerInteractionEventArgs args)
+    {
+        Debug.Log("Press: " + args.HandleObject);
     }
 
     private void OnDragStart(object sender, PointerDragInteractionEventArgs args)
     {
-        Debug.Log(args.HandleObject);
+        Debug.Log("Drag start: " + args.HandleObject);
     }
 
     private void OnDrag(object sender, PointerDragInteractionEventArgs args)
     {
-        Debug.Log(args.HandleObject);
+        Debug.Log("Drag: " + args.HandleObject);
     }
 
     private void OnDragEnd(object sender, PointerDragInteractionEventArgs args)
     {
-        Debug.Log(args.HandleObject);
+        Debug.Log("Drag end: " + args.HandleObject);
+    }
+
+    private void OnGrabStart(object sender, PointerInteractionEventArgs args)
+    {
+        Debug.Log("Grab start: " + args.HandleObject);
+    }
+
+    private void OnGrabEnd(object sender, PointerInteractionEventArgs args)
+    {
+        Debug.Log("Grab end: " + args.HandleObject);
     }
 }

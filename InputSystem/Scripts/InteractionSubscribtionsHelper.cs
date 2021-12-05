@@ -134,7 +134,7 @@ namespace ViJTools
         /// </summary>
         /// <param name="interactionObject"></param>
         /// <param name="handler"></param>
-        public static DisposableAction SubscribePressEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> handler)
+        public static DisposableAction SubscribePointerPressEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> handler)
         {
             interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerPressEvent, handler);
             return new DisposableAction(() => interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerPressEvent, handler));
