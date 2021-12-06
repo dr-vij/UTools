@@ -8,7 +8,14 @@ namespace ViJTools
     public class InteractionSubscribtion
     {
         public readonly Delegate Handler;
+        public readonly bool HandleEvents;
+        public readonly bool IgnoreHandled;
 
-        public InteractionSubscribtion(Delegate handler) => Handler = handler;
+        public InteractionSubscribtion(Delegate handler, bool handleEvents = true, bool runIfHandled = false )
+        {
+            HandleEvents = handleEvents;
+            IgnoreHandled = runIfHandled;
+            Handler = handler;
+        }
     }
 }

@@ -134,10 +134,10 @@ namespace ViJTools
         /// </summary>
         /// <param name="interactionObject"></param>
         /// <param name="handler"></param>
-        public static DisposableAction SubscribePointerPressEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> handler)
+        public static IDisposable SubscribePointerPressEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> handler,
+            bool handleEvents = true, bool ignoreHandled = false)
         {
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerPressEvent, handler);
-            return new DisposableAction(() => interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerPressEvent, handler));
+            return interactionObject.Subscribe(InteractionEvents.PointerPressEvent, handler, handleEvents, ignoreHandled);
         }
 
         /// <summary>
@@ -147,21 +147,16 @@ namespace ViJTools
         /// <param name="pointerDragStartHandler"></param>
         /// <param name="pointerDragHandler"></param>
         /// <param name="pointerDragEndHandler"></param>
-        public static DisposableAction SubscribePointerDragEvent(this InteractionObject interactionObject,
+        public static IDisposable SubscribePointerDragEvent(this InteractionObject interactionObject,
             EventHandler<PointerDragInteractionEventArgs> pointerDragStartHandler,
             EventHandler<PointerDragInteractionEventArgs> pointerDragHandler,
-            EventHandler<PointerDragInteractionEventArgs> pointerDragEndHandler)
+            EventHandler<PointerDragInteractionEventArgs> pointerDragEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
         {
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerDragStartEvent, pointerDragStartHandler);
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerDragEvent, pointerDragHandler);
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerDragEndEvent, pointerDragEndHandler);
-
-            return new DisposableAction(() =>
-            {
-                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerDragStartEvent, pointerDragStartHandler);
-                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerDragEvent, pointerDragHandler);
-                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerDragEndEvent, pointerDragEndHandler);
-            });
+            var sub1 = interactionObject.Subscribe(InteractionEvents.PointerDragStartEvent, pointerDragStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObject.Subscribe(InteractionEvents.PointerDragEvent, pointerDragHandler, handleEvents, ignoreHandled);
+            var sub3 = interactionObject.Subscribe(InteractionEvents.PointerDragEndEvent, pointerDragEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() => { sub1.Dispose(); sub2.Dispose(); sub3.Dispose(); });
         }
 
         /// <summary>
@@ -171,18 +166,14 @@ namespace ViJTools
         /// <param name="pointerGrabStartHandler"></param>
         /// <param name="pointerGrabEndHandler"></param>
         /// <returns></returns>
-        public static DisposableAction SubscribePointerGrabEvent(this InteractionObject interactionObject,
+        public static IDisposable SubscribePointerGrabEvent(this InteractionObject interactionObject,
             EventHandler<PointerInteractionEventArgs> pointerGrabStartHandler,
-            EventHandler<PointerInteractionEventArgs> pointerGrabEndHandler)
+            EventHandler<PointerInteractionEventArgs> pointerGrabEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
         {
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerGrabStartEvent, pointerGrabStartHandler);
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerGrabEndEvent, pointerGrabEndHandler);
-
-            return new DisposableAction(() =>
-            {
-                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerGrabStartEvent, pointerGrabStartHandler);
-                interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerGrabEndEvent, pointerGrabEndHandler);
-            });
+            var sub1 = interactionObject.Subscribe(InteractionEvents.PointerGrabStartEvent, pointerGrabStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObject.Subscribe(InteractionEvents.PointerGrabEndEvent, pointerGrabEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() => { sub1.Dispose(); sub2.Dispose(); });
         }
 
         /// <summary>
@@ -190,10 +181,10 @@ namespace ViJTools
         /// </summary>
         /// <param name="interactionObject"></param>
         /// <param name="pointerMoveHandler"></param>
-        public static DisposableAction SubscribePointerMoveEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> pointerMoveHandler)
+        public static IDisposable SubscribePointerMoveEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> pointerMoveHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
         {
-            interactionObject.Subscribe(ObjectInteractionEvents.ObjectPointerMoveEvent, pointerMoveHandler);
-            return new DisposableAction(() => interactionObject.Unsubscribe(ObjectInteractionEvents.ObjectPointerMoveEvent, pointerMoveHandler));
+            return interactionObject.Subscribe(InteractionEvents.PointerMoveEvent, pointerMoveHandler, handleEvents, ignoreHandled);
         }
         #endregion
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,46 +7,46 @@ using ViJTools;
 
 public class InputTest : MonoBehaviour
 {
-    [SerializeField] private List<InteractionObject> mObjects = default;
+    private IDisposable mDragSubscribtion;
+    private InteractionObject mCameraInteractionObject;
+    private bool mIgnoreHandled = false;
 
     private void Awake()
     {
         InputManager.Instance.RegisterCamera(Camera.main);
-        foreach (var obj in mObjects)
-        {
-            obj.SubscribePointerDragEvent(OnDragStart, OnDrag, OnDragEnd);
-            obj.SubscribePointerPressEvent(OnPress);
-            obj.SubscribePointerGrabEvent(OnGrabStart, OnGrabEnd);
-        }
+        mCameraInteractionObject = Camera.main.GetComponent<InteractionObject>();
+
+        mCameraInteractionObject.SubscribePointerPressEvent(OnPress);
+        Resubscribe();
+    }
+
+    private void Resubscribe()
+    {
+        if (mDragSubscribtion != null)
+            mDragSubscribtion.Dispose();
+
+        mDragSubscribtion = mCameraInteractionObject.SubscribePointerDragEvent(OnDragStart, OnDrag, OnDragEnd, true, mIgnoreHandled);
+
     }
 
     private void OnPress(object sender, PointerInteractionEventArgs args)
     {
-        Debug.Log("Press: " + args.HandleObject);
+        mIgnoreHandled = !mIgnoreHandled;
+        Resubscribe();
     }
 
     private void OnDragStart(object sender, PointerDragInteractionEventArgs args)
     {
-        Debug.Log("Drag start: " + args.HandleObject);
+        transform.position += (Vector3)(args.Position - args.PrevPosition) / 100;
     }
 
     private void OnDrag(object sender, PointerDragInteractionEventArgs args)
     {
-        Debug.Log("Drag: " + args.HandleObject);
+        transform.position += (Vector3)(args.Position - args.PrevPosition) / 100;
     }
 
     private void OnDragEnd(object sender, PointerDragInteractionEventArgs args)
     {
-        Debug.Log("Drag end: " + args.HandleObject);
-    }
-
-    private void OnGrabStart(object sender, PointerInteractionEventArgs args)
-    {
-        Debug.Log("Grab start: " + args.HandleObject);
-    }
-
-    private void OnGrabEnd(object sender, PointerInteractionEventArgs args)
-    {
-        Debug.Log("Grab end: " + args.HandleObject);
+        transform.position += (Vector3)(args.Position - args.PrevPosition) / 100;
     }
 }

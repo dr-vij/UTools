@@ -11,38 +11,40 @@ namespace ViJTools
     /// </summary>
     public class InteractionObject : DisposableMonobehaviour
     {
-        private Dictionary<ObjectInteractionEvent, List<InteractionSubscribtion>> mAllSubscribtions = new Dictionary<ObjectInteractionEvent, List<InteractionSubscribtion>>();
+        private Dictionary<InteractionEvent, List<InteractionSubscribtion>> mAllSubscribtions = new Dictionary<InteractionEvent, List<InteractionSubscribtion>>();
 
-        public bool HasEventSubscribtion(ObjectInteractionEvent evt)
+        public bool HasEventSubscribtion(InteractionEvent evt)
         {
             return mAllSubscribtions.TryGetValue(evt, out var subscribtions) && subscribtions.Count != 0;
         }
 
-        public void Subscribe<TEventArgs>(ObjectInteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
+        public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false) where TEventArgs : InteractionEventArgs
         {
-            if (!mAllSubscribtions.TryGetValue(evt, out var subscribtions))
-            {
-                subscribtions = new List<InteractionSubscribtion>();
-                mAllSubscribtions.Add(evt, subscribtions);
-            }
-            subscribtions.Add(new InteractionSubscribtion(handler));
+            if (handler == null)
+                handler = (obj, args) => { };
+            AddSubscribtion(evt, handler, handleEvent, ignoreHandled);
+            return new DisposableAction(() => RemoveSubscribtion(evt, handler));
         }
 
-        public void Unsubscribe<TEventArgs>(ObjectInteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
-        {
-            if (mAllSubscribtions.TryGetValue(evt, out var subscribtions))
-            {
-                subscribtions.RemoveAll((subscribtion) => subscribtion.Handler == (Delegate)handler);
-            }
-        }
-
-        public void RunEvent(ObjectInteractionEvent evt, InteractionEventArgs args)
+        /// <summary>
+        /// Runs event on object if he has such subscribtion and if it can run it (handle condition/subscribtion check)
+        /// </summary>
+        /// <param name="evt"></param>
+        /// <param name="args"></param>
+        public void RunEvent(InteractionEvent evt, InteractionEventArgs args)
         {
             if (mAllSubscribtions.TryGetValue(evt, out var handlers))
             {
-                args.Handle(this);
                 foreach(var handler in handlers)
-                    handler.Handler.DynamicInvoke(this, args);
+                {
+                    var isHandled = args.IsHandled;
+                    if (!isHandled || handler.IgnoreHandled)
+                    {
+                        if (handler.HandleEvents)
+                            args.Handle(this);
+                        handler.Handler.DynamicInvoke(this, args);
+                    }
+                }
             }
         }
 
@@ -55,6 +57,22 @@ namespace ViJTools
             {
                 Debug.LogError($"Several InteractionObject scripts found at one gameobject {gameObject.name}", gameObject);
             }
+        }
+
+        private void AddSubscribtion<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false) where TEventArgs : InteractionEventArgs
+        {
+            if (!mAllSubscribtions.TryGetValue(evt, out var subscribtions))
+            {
+                subscribtions = new List<InteractionSubscribtion>();
+                mAllSubscribtions.Add(evt, subscribtions);
+            }
+            subscribtions.Add(new InteractionSubscribtion(handler, handleEvent, ignoreHandled));
+        }
+
+        private void RemoveSubscribtion<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
+        {
+            if (mAllSubscribtions.TryGetValue(evt, out var subscribtions))
+                subscribtions.RemoveAll((subscribtion) => subscribtion.Handler == (Delegate)handler);
         }
     }
 }
