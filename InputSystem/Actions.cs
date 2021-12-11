@@ -562,6 +562,24 @@ namespace ViJTools
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""PrimaryPointer"",
+                    ""type"": ""Value"",
+                    ""id"": ""9eb45181-1a19-40d1-a479-c4322cfc51f9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""SecondaryPointer"",
+                    ""type"": ""Value"",
+                    ""id"": ""13ce6136-3943-4d3d-942c-b861e01cf826"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -586,6 +604,237 @@ namespace ViJTools
                     ""action"": ""PointerMove"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Mouse/Pen"",
+                    ""id"": ""c5e88b36-41c0-41ef-b7db-774a84a057a5"",
+                    ""path"": ""PointerInput"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Contact"",
+                    ""id"": ""f40cb589-d9d9-4d02-b70e-2019907d9b47"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Contact"",
+                    ""id"": ""83ac1503-2f82-4fc1-9e43-b0f8122fd359"",
+                    ""path"": ""<Pen>/tip"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Position"",
+                    ""id"": ""79ea67f1-e56a-4252-879d-eca1a360e36a"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Position"",
+                    ""id"": ""0080fb83-4b95-4eaf-953f-56856945511f"",
+                    ""path"": ""<Pen>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Tilt"",
+                    ""id"": ""01c193b6-fb78-4b04-9166-5f71eeacb0e9"",
+                    ""path"": ""<Pen>/tilt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Radius"",
+                    ""id"": ""c04d57e9-3ce9-4dad-8032-aefda206ab58"",
+                    ""path"": ""<Pen>/radius"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Pressure"",
+                    ""id"": ""04d705ae-fbca-4f57-acd9-da4b7b54ee07"",
+                    ""path"": ""<Pen>/pressure"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Twist"",
+                    ""id"": ""30e71071-d376-4f0c-8a36-4349ceda2ccd"",
+                    ""path"": ""<Pen>/twist"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Touch"",
+                    ""id"": ""7a51a910-2ac6-4ff2-8ec4-dc640c16ca01"",
+                    ""path"": ""PointerInput"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Contact"",
+                    ""id"": ""9759830f-102f-461a-bc9a-c3c50e68adbe"",
+                    ""path"": ""<Touchscreen>/primaryTouch/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Position"",
+                    ""id"": ""7f2af6f1-7c7b-42b1-9fcc-801a7e52cf10"",
+                    ""path"": ""<Touchscreen>/primaryTouch/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Radius"",
+                    ""id"": ""8e9a2feb-e7bd-405e-84a2-269d9fe8f19e"",
+                    ""path"": ""<Touchscreen>/primaryTouch/radius"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Pressure"",
+                    ""id"": ""dcbc0be0-f840-483b-9bd5-99f554e67ba2"",
+                    ""path"": ""<Touchscreen>/primaryTouch/pressure"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""InputId"",
+                    ""id"": ""7b99e9bd-78b2-44f0-b34c-2749494dfd1a"",
+                    ""path"": ""<Touchscreen>/primaryTouch/touchId"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PrimaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Touch"",
+                    ""id"": ""750e06fd-5a20-45b4-9d77-b68d24b4b18f"",
+                    ""path"": ""PointerInput"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryPointer"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Contact"",
+                    ""id"": ""3e2fc7eb-dc57-4db8-9c64-a31a2a030380"",
+                    ""path"": ""<Touchscreen>/touch1/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Position"",
+                    ""id"": ""c34ccaa7-854d-4352-9839-159d4e14fb94"",
+                    ""path"": ""<Touchscreen>/touch1/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Radius"",
+                    ""id"": ""57528db0-6d2f-4edf-8d68-c4cf818fa0b7"",
+                    ""path"": ""<Touchscreen>/touch1/radius"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Pressure"",
+                    ""id"": ""889702f8-aa03-43b4-ae02-ad977f2e2f12"",
+                    ""path"": ""<Touchscreen>/touch1/pressure"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""InputId"",
+                    ""id"": ""b58b8cbb-add7-4f1e-a555-4e280f465440"",
+                    ""path"": ""<Touchscreen>/touch1/touchId"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryPointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -608,6 +857,8 @@ namespace ViJTools
             m_GestureActions = asset.FindActionMap("GestureActions", throwIfNotFound: true);
             m_GestureActions_PointerStart = m_GestureActions.FindAction("PointerStart", throwIfNotFound: true);
             m_GestureActions_PointerMove = m_GestureActions.FindAction("PointerMove", throwIfNotFound: true);
+            m_GestureActions_PrimaryPointer = m_GestureActions.FindAction("PrimaryPointer", throwIfNotFound: true);
+            m_GestureActions_SecondaryPointer = m_GestureActions.FindAction("SecondaryPointer", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -774,12 +1025,16 @@ namespace ViJTools
         private IGestureActionsActions m_GestureActionsActionsCallbackInterface;
         private readonly InputAction m_GestureActions_PointerStart;
         private readonly InputAction m_GestureActions_PointerMove;
+        private readonly InputAction m_GestureActions_PrimaryPointer;
+        private readonly InputAction m_GestureActions_SecondaryPointer;
         public struct GestureActionsActions
         {
             private @Actions m_Wrapper;
             public GestureActionsActions(@Actions wrapper) { m_Wrapper = wrapper; }
             public InputAction @PointerStart => m_Wrapper.m_GestureActions_PointerStart;
             public InputAction @PointerMove => m_Wrapper.m_GestureActions_PointerMove;
+            public InputAction @PrimaryPointer => m_Wrapper.m_GestureActions_PrimaryPointer;
+            public InputAction @SecondaryPointer => m_Wrapper.m_GestureActions_SecondaryPointer;
             public InputActionMap Get() { return m_Wrapper.m_GestureActions; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -795,6 +1050,12 @@ namespace ViJTools
                     @PointerMove.started -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnPointerMove;
                     @PointerMove.performed -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnPointerMove;
                     @PointerMove.canceled -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnPointerMove;
+                    @PrimaryPointer.started -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnPrimaryPointer;
+                    @PrimaryPointer.performed -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnPrimaryPointer;
+                    @PrimaryPointer.canceled -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnPrimaryPointer;
+                    @SecondaryPointer.started -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnSecondaryPointer;
+                    @SecondaryPointer.performed -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnSecondaryPointer;
+                    @SecondaryPointer.canceled -= m_Wrapper.m_GestureActionsActionsCallbackInterface.OnSecondaryPointer;
                 }
                 m_Wrapper.m_GestureActionsActionsCallbackInterface = instance;
                 if (instance != null)
@@ -805,6 +1066,12 @@ namespace ViJTools
                     @PointerMove.started += instance.OnPointerMove;
                     @PointerMove.performed += instance.OnPointerMove;
                     @PointerMove.canceled += instance.OnPointerMove;
+                    @PrimaryPointer.started += instance.OnPrimaryPointer;
+                    @PrimaryPointer.performed += instance.OnPrimaryPointer;
+                    @PrimaryPointer.canceled += instance.OnPrimaryPointer;
+                    @SecondaryPointer.started += instance.OnSecondaryPointer;
+                    @SecondaryPointer.performed += instance.OnSecondaryPointer;
+                    @SecondaryPointer.canceled += instance.OnSecondaryPointer;
                 }
             }
         }
@@ -826,6 +1093,8 @@ namespace ViJTools
         {
             void OnPointerStart(InputAction.CallbackContext context);
             void OnPointerMove(InputAction.CallbackContext context);
+            void OnPrimaryPointer(InputAction.CallbackContext context);
+            void OnSecondaryPointer(InputAction.CallbackContext context);
         }
     }
 }
