@@ -8,6 +8,113 @@ using UnityEngine.InputSystem;
 
 namespace ViJTools
 {
+    public class InteractionPointer
+    {
+        public int ID { get; private set; }
+        public Vector2 PointerStartPosition { get; private set; }
+        public Vector2 PointerPosition { get; private set; }
+        public Vector2 PointerPrevPosition { get; private set; }
+        public bool IsPrimary { get; private set; }
+
+        public event Action<InteractionPointer> PositionChangeEvent;
+
+        public PointerInput Data { get; private set; }
+
+        public InteractionPointer(PointerInput data, bool isPrimary)
+        {
+            PointerStartPosition = data.Position;
+            PointerPosition = data.Position;
+            PointerPrevPosition = data.Position;
+            IsPrimary = isPrimary;
+            ID = data.InputId;
+        }
+
+        public void UpdateData(PointerInput newData)
+        {
+            if (ID != newData.InputId)
+                Debug.LogError("WRONG DATA");
+            Data = newData;
+            PointerPrevPosition = PointerPosition;
+            PointerPosition = newData.Position;
+            PositionChangeEvent?.Invoke(this);
+        }
+    }
+
+    public class SimpleGestureAnalizer : DisposableObject
+    {
+        private static int mIdCounter = -1;
+
+        public int Id { get; protected set; }
+
+        private InteractionPointer[] mActivePointers = new InteractionPointer[10];
+
+        public InteractionObject InteractionObject { get; private set; }
+
+        public Camera InteractionCamera { get; private set; }
+
+        public int PointersCount => mActivePointers.Where(c => c != null).Count();
+
+        public SimpleGestureAnalizer(InteractionObject initiatorObject, Camera initiatorCamera)
+        {
+            InteractionObject = initiatorObject;
+            InteractionCamera = initiatorCamera;
+
+            Id = ++mIdCounter;
+        }
+
+        public void AddTrackingPointer(InteractionPointer pointer)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (mActivePointers[i] == null)
+                {
+                    mActivePointers[i] = pointer;
+                    pointer.PositionChangeEvent += OnPointerUpdate;
+
+                    //POINTER i DOWN
+                    Debug.Log($"Gesture {Id} TestPointer down {i}");
+                    break;
+                }
+            }
+        }
+
+        private void OnPointerUpdate(InteractionPointer pointer)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (mActivePointers[i] == pointer)
+                {
+                    //POINTER i UPDATE
+                    Debug.Log($"Gesture {Id} TestPointer update {i}");
+                    break;
+                }
+            }
+        }
+
+        public void RemoveTrackingPointer(InteractionPointer pointer)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (mActivePointers[i] == pointer)
+                {
+                    var p = mActivePointers[i];
+                    p.PositionChangeEvent -= OnPointerUpdate;
+                    mActivePointers[i] = null;
+                    //POINTER i UP;
+                    Debug.Log($"Gesture {Id} TestPointer up {i}");
+                    break;
+                }
+            }
+        }
+
+        public void Update()
+        {
+            for(int i = 0; i< 10; i++)
+                if (mActivePointers[i] != null)
+                    mActivePointers[i].UpdateData(mActivePointers[i].Data);
+        }
+    }
+
     public class InputManager : SingletonMonobehaviour<InputManager>
     {
         private string mUnsopportedPointerMsg = "Unknown control device. Cannot read its position. check if control device is Pointer";
@@ -55,33 +162,9 @@ namespace ViJTools
         private InputDevice mActiveDevice;
         private HashSet<int> mActiveTouches = new HashSet<int>();
         private bool mIsMouseOrPenInputStarted;
-        private Dictionary<int, InteractionPointerData> mActivePointers = new Dictionary<int, InteractionPointerData>();
 
-        public class InteractionPointerData
-        {
-            public int ID { get; private set; }
-
-            public Vector2 PointerStartPosition { get; private set; }
-            public Vector2 PointerPosition { get; private set; }
-            public Vector2 PointerPrevPosition { get; private set; }
-
-            public bool IsPrimary { get; private set; }
-
-            public InteractionPointerData(Vector2 initialPosition, int id, bool isPrimary)
-            {
-                PointerStartPosition = initialPosition;
-                PointerPosition = initialPosition;
-                PointerPrevPosition = initialPosition;
-                IsPrimary = isPrimary;
-                ID = id;
-            }
-
-            public void UpdatePosition(Vector2 newPosition)
-            {
-                PointerPrevPosition = PointerPosition;
-                PointerPosition = newPosition;
-            }
-        }
+        private Dictionary<int, InteractionPointer> mActivePointers = new Dictionary<int, InteractionPointer>();
+        private Dictionary<InteractionObject, SimpleGestureAnalizer> mActiveGestures = new Dictionary<InteractionObject, SimpleGestureAnalizer>();
 
         private void OnPointerEvent(InputAction.CallbackContext context)
         {
@@ -162,46 +245,64 @@ namespace ViJTools
             }
         }
 
-        private List<Transform> mTestTransforms = new List<Transform>();
-        private Plane mTestPlane = new Plane(Vector3.back, Vector3.zero);
-
         private void OnRawPointerDown(PointerInput data)
         {
-            Debug.Log($"TestPointerDown {data.InputId} {data.Position}");
-            mActivePointers.Add(data.InputId, new InteractionPointerData(data.Position, data.InputId, mActivePointers.Count == 0));
+            var interactionPointer = new InteractionPointer(data, mActivePointers.Count == 0);
 
-            var t = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-            mTestTransforms.Add(t);
-            Set2dPos(data.Position, t);
-        }
+            //TODO: INPUT INTERCEPTOR CAN BE HERE
+            mActivePointers.Add(data.InputId, interactionPointer);
+            if (!mCameraTracer.IsOverUI(data.Position))
+            {
+                var goodCameras = GetTracebleCameras(data.Position);
+                if (goodCameras.Count != 0)
+                {
+                    var camera = goodCameras[0];
+                    if (mCameraTracer.TryTraceInteractionObject(camera, data.Position, out var interactionObject))
+                    {
+                        if (!mActiveGestures.TryGetValue(interactionObject, out var gesture))
+                        {
 
-        private void OnRawPointerUp(PointerInput data)
-        {
-            Debug.Log($"TestPointerUp {data.InputId}, {data.Position}");
-            mActivePointers.Remove(data.InputId);
-            var last = mTestTransforms[mTestTransforms.Count - 1];
-            mTestTransforms.RemoveAt(mTestTransforms.Count - 1);
-            Destroy(last.gameObject);
+                            gesture = new SimpleGestureAnalizer(interactionObject, camera);
+                            mActiveGestures.Add(interactionObject, gesture);
+                        }
 
-            var counter = 0;
-            foreach (var activePointer in mActivePointers.Values)
-                Set2dPos(activePointer.PointerPosition, mTestTransforms[counter++]);
+                        gesture?.AddTrackingPointer(interactionPointer);
+                    }
+                    else
+                    {
+                        //TODO: CAMERA INTERACTION CAN BE HERE
+                    }
+                }
+            }
         }
 
         private void OnRawPointerDrag(PointerInput data)
         {
-            Debug.Log($"TestPointerMove {data.InputId}, {data.Position}");
-            mActivePointers[data.InputId].UpdatePosition(data.Position);
+            //Just update data. everything should be inside subscribtions
+            mActivePointers[data.InputId].UpdateData(data);
+        }
 
-            var counter = 0;
-            foreach (var activePointer in mActivePointers.Values)
-                Set2dPos(activePointer.PointerPosition, mTestTransforms[counter++]);
+        private void OnRawPointerUp(PointerInput data)
+        {
+            var pointer = mActivePointers[data.InputId];
+            List<InteractionObject> toRemoveList = new List<InteractionObject>();
+            foreach (var gesture in mActiveGestures)
+            {
+                gesture.Value.RemoveTrackingPointer(pointer);
+                if (gesture.Value.PointersCount == 0)
+                    toRemoveList.Add(gesture.Key);
+            }
+            foreach (var gesture in toRemoveList)
+                mActiveGestures.Remove(gesture);
+
+            mActivePointers.Remove(data.InputId);
         }
 
         private void Set2dPos(Vector2 pos, Transform t)
         {
             var ray = mCameras[0].ScreenPointToRay(pos);
-            mTestPlane.Raycast(ray, out var enter);
+            var plane = new Plane(Vector3.back, 0);
+            plane.Raycast(ray, out var enter);
             var point3d = ray.GetPoint(enter);
             t.transform.position = point3d;
         }
