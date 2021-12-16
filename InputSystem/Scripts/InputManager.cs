@@ -42,108 +42,143 @@ namespace ViJTools
 
     public class SimpleGestureAnalizer : DisposableObject
     {
-        private static int mIdCounter = -1;
+        private static int m_IdCounter = -1;
 
-        public int Id { get; protected set; }
-
-        private InteractionPointer[] mActivePointers = new InteractionPointer[10];
-
-        public InteractionObject InteractionObject { get; private set; }
+        private InteractionPointer[] m_ActivePointers = new InteractionPointer[10];
 
         public Camera InteractionCamera { get; private set; }
 
-        public int PointersCount => mActivePointers.Where(c => c != null).Count();
+        public int Id { get; protected set; }
+
+        public InteractionObject InteractionObject { get; private set; }
+
+        public int PointersCount { get; private set; }
 
         public SimpleGestureAnalizer(InteractionObject initiatorObject, Camera initiatorCamera)
         {
             InteractionObject = initiatorObject;
             InteractionCamera = initiatorCamera;
 
-            Id = ++mIdCounter;
+            Id = ++m_IdCounter;
         }
 
         public void AddTrackingPointer(InteractionPointer pointer)
         {
-            for (int i = 0; i < 10; i++)
-            {
-                if (mActivePointers[i] == null)
-                {
-                    mActivePointers[i] = pointer;
-                    pointer.PositionChangeEvent += OnPointerUpdate;
+            var index = GetFirstFreePointerIndex();
+            if (index == -1)
+                return;
 
-                    //POINTER i DOWN
-                    Debug.Log($"Gesture {Id} TestPointer down {i}");
-                    break;
-                }
+            PointersCount++;
+            m_ActivePointers[index] = pointer;
+            pointer.PositionChangeEvent += OnPointerUpdate;
+
+            //POINTER i DOWN
+            if (PointersCount == 1)
+            {
+                //Grab start
+                var args = new PointerInteractionEventArgs(pointer.PointerPosition);
+                InteractionObject.RunEvent(InteractionEvents.PointerGrabStartEvent, args);
             }
+            else if (PointersCount == 2)
+            {
+                
+            }
+
+            Debug.Log($"Gesture {Id} TestPointer down {index}, position {pointer.PointerPosition}");
         }
 
         private void OnPointerUpdate(InteractionPointer pointer)
         {
-            for (int i = 0; i < 10; i++)
+            var index = Array.IndexOf(m_ActivePointers, pointer);
+            if (index == -1)
+                return;
+
+            if (PointersCount == 1)
             {
-                if (mActivePointers[i] == pointer)
-                {
-                    //POINTER i UPDATE
-                    Debug.Log($"Gesture {Id} TestPointer update {i}");
-                    break;
-                }
+                //Pointer drag
             }
+            else if (PointersCount == 2)
+            {
+                //Double pointer drag
+            }
+
+            //POINTER i UPDATE
+            Debug.Log($"Gesture {Id} TestPointer update {index}, position {pointer.PointerPosition}");
         }
 
         public void RemoveTrackingPointer(InteractionPointer pointer)
         {
-            for (int i = 0; i < 10; i++)
+            var index = Array.IndexOf(m_ActivePointers, pointer);
+            if (index == -1)
+                return;
+
+            PointersCount--;
+            var p = m_ActivePointers[index];
+            p.PositionChangeEvent -= OnPointerUpdate;
+            m_ActivePointers[index] = null;
+
+            if (PointersCount == 0)
             {
-                if (mActivePointers[i] == pointer)
-                {
-                    var p = mActivePointers[i];
-                    p.PositionChangeEvent -= OnPointerUpdate;
-                    mActivePointers[i] = null;
-                    //POINTER i UP;
-                    Debug.Log($"Gesture {Id} TestPointer up {i}");
-                    break;
-                }
+                var args = new PointerInteractionEventArgs(pointer.PointerPosition);
+                InteractionObject.RunEvent(InteractionEvents.PointerGrabEndEvent, args);
             }
+
+            //POINTER i UP;
+            Debug.Log($"Gesture {Id} TestPointer up {index}, position {pointer.PointerPosition}");
         }
 
         public void Update()
         {
-            for(int i = 0; i< 10; i++)
-                if (mActivePointers[i] != null)
-                    mActivePointers[i].UpdateData(mActivePointers[i].Data);
+            for (int i = 0; i < 10; i++)
+                if (m_ActivePointers[i] != null)
+                    m_ActivePointers[i].UpdateData(m_ActivePointers[i].Data);
+        }
+
+        private int GetFirstFreePointerIndex()
+        {
+            for (int i = 0; i < 10; i++)
+                if (m_ActivePointers[i] == null)
+                    return i;
+            return -1;
         }
     }
 
     public class InputManager : SingletonMonobehaviour<InputManager>
     {
-        private string mUnsopportedPointerMsg = "Unknown control device. Cannot read its position. check if control device is Pointer";
+        private string m_UnsopportedPointerMsg = "Unknown control device. Cannot read its position. check if control device is Pointer";
 
         /// <summary>
         /// This parameters determines how far should drag perform to be to start drag. If distance is less, press will be performed
         /// </summary>
-        [SerializeField] private int mDragOrPressTriggerDistance = 0;
+        [SerializeField] private int m_DragOrPressTriggerDistance = 0;
 
         /// <summary>
         /// Raise drags on update if true
         /// </summary>
-        [SerializeField] private bool mRaiseDragOnUpdates = true;
+        [SerializeField] private bool m_RaiseDragOnUpdates = true;
 
-        private InputDataContainer mInputData = new InputDataContainer();
-        private Actions mActions;
-        private List<Camera> mCameras = new List<Camera>();
-        private CameraTracer mCameraTracer = new CameraTracer();
+        private InputDataContainer m_InputData = new InputDataContainer();
+        private Actions m_Actions;
+        private List<Camera> m_Cameras = new List<Camera>();
+        private CameraTracer m_CameraTracer = new CameraTracer();
 
-        public CameraTracer CameraTracer => mCameraTracer;
+        private InputDevice m_ActiveDevice;
+        private HashSet<int> m_ActiveTouches = new HashSet<int>();
+        private bool m_IsMouseOrPenInputStarted;
+
+        private Dictionary<int, InteractionPointer> mActivePointers = new Dictionary<int, InteractionPointer>();
+        private Dictionary<InteractionObject, SimpleGestureAnalizer> mActiveGestures = new Dictionary<InteractionObject, SimpleGestureAnalizer>();
+
+        public CameraTracer CameraTracer => m_CameraTracer;
 
         public void RegisterCamera(Camera cam)
         {
-            if (!mCameras.Contains(cam))
+            if (!m_Cameras.Contains(cam))
             {
-                mCameras.Add(cam);
+                m_Cameras.Add(cam);
                 if (!cam.TryGetComponent<InteractionObject>(out var interactionObject))
                     cam.gameObject.AddComponent<InteractionObject>();
-                mCameras.Sort((cam1, cam2) => cam1.depth.CompareTo(cam2.depth));
+                m_Cameras.Sort((cam1, cam2) => cam1.depth.CompareTo(cam2.depth));
             }
         }
 
@@ -152,19 +187,12 @@ namespace ViJTools
         /// </summary>
         private void OnEnable()
         {
-            mActions = new Actions();
-            mActions.GestureActions.Enable();
+            m_Actions = new Actions();
+            m_Actions.GestureActions.Enable();
 
-            mActions.GestureActions.Pointer.performed += OnPointerEvent;
-            mActions.GestureActions.Pointer.canceled += OnPointerEvent;
+            m_Actions.GestureActions.Pointer.performed += OnPointerEvent;
+            m_Actions.GestureActions.Pointer.canceled += OnPointerEvent;
         }
-
-        private InputDevice mActiveDevice;
-        private HashSet<int> mActiveTouches = new HashSet<int>();
-        private bool mIsMouseOrPenInputStarted;
-
-        private Dictionary<int, InteractionPointer> mActivePointers = new Dictionary<int, InteractionPointer>();
-        private Dictionary<InteractionObject, SimpleGestureAnalizer> mActiveGestures = new Dictionary<InteractionObject, SimpleGestureAnalizer>();
 
         private void OnPointerEvent(InputAction.CallbackContext context)
         {
@@ -177,26 +205,26 @@ namespace ViJTools
                     //Check if new contact
                     if (data.Contact)
                     {
-                        if (mActiveTouches.Contains(data.InputId))
+                        if (m_ActiveTouches.Contains(data.InputId))
                         {
                             //POINTER DRAG
                             OnRawPointerDrag(data);
                         }
                         else
                         {
-                            mActiveTouches.Add(data.InputId);
-                            mActiveDevice = context.control.device;
+                            m_ActiveTouches.Add(data.InputId);
+                            m_ActiveDevice = context.control.device;
                             //POINTER DOWN
                             OnRawPointerDown(data);
                         }
                     }
                     else
                     {
-                        if (mActiveTouches.Contains(data.InputId))
+                        if (m_ActiveTouches.Contains(data.InputId))
                         {
-                            mActiveTouches.Remove(data.InputId);
-                            if (mActiveTouches.Count == 0)
-                                mActiveDevice = null;
+                            m_ActiveTouches.Remove(data.InputId);
+                            if (m_ActiveTouches.Count == 0)
+                                m_ActiveDevice = null;
                             //POINTER UP
                             OnRawPointerUp(data);
                         }
@@ -214,25 +242,25 @@ namespace ViJTools
 
                     if (data.Contact)
                     {
-                        if (mIsMouseOrPenInputStarted)
+                        if (m_IsMouseOrPenInputStarted)
                         {
                             //POINTER DRAG
                             OnRawPointerDrag(data);
                         }
                         else
                         {
-                            mIsMouseOrPenInputStarted = true;
-                            mActiveDevice = context.control.device;
+                            m_IsMouseOrPenInputStarted = true;
+                            m_ActiveDevice = context.control.device;
                             //POINTER DOWN
                             OnRawPointerDown(data);
                         }
                     }
                     else
                     {
-                        if (mIsMouseOrPenInputStarted)
+                        if (m_IsMouseOrPenInputStarted)
                         {
-                            mIsMouseOrPenInputStarted = false;
-                            mActiveDevice = null;
+                            m_IsMouseOrPenInputStarted = false;
+                            m_ActiveDevice = null;
                             //POINTER UP
                             OnRawPointerUp(data);
                         }
@@ -251,13 +279,13 @@ namespace ViJTools
 
             //TODO: INPUT INTERCEPTOR CAN BE HERE
             mActivePointers.Add(data.InputId, interactionPointer);
-            if (!mCameraTracer.IsOverUI(data.Position))
+            if (!m_CameraTracer.IsOverUI(data.Position))
             {
                 var goodCameras = GetTracebleCameras(data.Position);
                 if (goodCameras.Count != 0)
                 {
                     var camera = goodCameras[0];
-                    if (mCameraTracer.TryTraceInteractionObject(camera, data.Position, out var interactionObject))
+                    if (m_CameraTracer.TryTraceInteractionObject(camera, data.Position, out var interactionObject))
                     {
                         if (!mActiveGestures.TryGetValue(interactionObject, out var gesture))
                         {
@@ -300,7 +328,7 @@ namespace ViJTools
 
         private void Set2dPos(Vector2 pos, Transform t)
         {
-            var ray = mCameras[0].ScreenPointToRay(pos);
+            var ray = m_Cameras[0].ScreenPointToRay(pos);
             var plane = new Plane(Vector3.back, 0);
             plane.Raycast(ray, out var enter);
             var point3d = ray.GetPoint(enter);
@@ -314,7 +342,7 @@ namespace ViJTools
         /// <returns></returns>
         private bool CanBeHandled(InputAction.CallbackContext context)
         {
-            return mActiveDevice == null || mActiveDevice.GetType() == context.control.device.GetType();
+            return m_ActiveDevice == null || m_ActiveDevice.GetType() == context.control.device.GetType();
         }
 
         /// <summary>
@@ -325,7 +353,7 @@ namespace ViJTools
             //mActions.GestureActions.PointerStart.performed -= OnPointerPerformed;
             //mActions.GestureActions.PointerStart.canceled -= OnPointerCanceled;
             //mActions.GestureActions.PointerMove.performed -= OnPointerMove;
-            mActions.Dispose();
+            m_Actions.Dispose();
         }
 
         /// <summary>
@@ -336,28 +364,28 @@ namespace ViJTools
         {
             if (TryReadPointerPosition(context, out var pointerPosition))
             {
-                mInputData.StartInput();
-                mInputData.PointerDownPosition = pointerPosition;
-                mInputData.PointerCurrentPosition = pointerPosition;
-                mInputData.PointerPreviousPosition = pointerPosition;
+                m_InputData.StartInput();
+                m_InputData.PointerDownPosition = pointerPosition;
+                m_InputData.PointerCurrentPosition = pointerPosition;
+                m_InputData.PointerPreviousPosition = pointerPosition;
 
                 //Pointer grab(object) and Pointer down (global) events
                 //TextDebugger.Instance.LogColored($"Pointer down at {mInputData.PointerCurrentPosition}", Color.blue);
-                var screenCoord = mInputData.PointerDownPosition;
+                var screenCoord = m_InputData.PointerDownPosition;
                 var args = new PointerInteractionEventArgs(screenCoord);
                 var evt = InteractionEvents.PointerGrabStartEvent;
-                if (!mCameraTracer.IsOverUI(screenCoord))
+                if (!m_CameraTracer.IsOverUI(screenCoord))
                 {
                     var goodCameras = GetTracebleCameras(screenCoord);
                     if (goodCameras.Count != 0)
                     {
                         var goodCam = goodCameras[0];
-                        mInputData.InteractionCamera = goodCam;
+                        m_InputData.InteractionCamera = goodCam;
                         args.SetCamera(goodCam);
 
-                        if (mCameraTracer.TryTraceInteractionObject(goodCam, screenCoord, out var interactionObject))
+                        if (m_CameraTracer.TryTraceInteractionObject(goodCam, screenCoord, out var interactionObject))
                         {
-                            mInputData.InteractionObject = interactionObject;
+                            m_InputData.InteractionObject = interactionObject;
                             interactionObject.RunEvent(evt, args);
                         }
 
@@ -367,7 +395,7 @@ namespace ViJTools
             }
             else
             {
-                Debug.LogError(mUnsopportedPointerMsg);
+                Debug.LogError(m_UnsopportedPointerMsg);
             }
         }
 
@@ -379,10 +407,10 @@ namespace ViJTools
 
         private List<Camera> GetTracebleCameras(Vector2 position)
         {
-            if (mCameras.Count == 0)
+            if (m_Cameras.Count == 0)
                 Debug.LogWarning("No traceble cameras. Did you forget to add one?");
 
-            return mCameras.Where(camera => mCameraTracer.CanBeTraced(camera, position)).ToList();
+            return m_Cameras.Where(camera => m_CameraTracer.CanBeTraced(camera, position)).ToList();
         }
 
         /// <summary>
@@ -393,49 +421,49 @@ namespace ViJTools
         {
             if (TryReadPointerPosition(context, out var pointerPosition))
             {
-                if (mInputData.IsPointerDownTriggered)
+                if (m_InputData.IsPointerDownTriggered)
                 {
-                    mInputData.PointerPreviousPosition = mInputData.PointerCurrentPosition;
-                    mInputData.PointerCurrentPosition = pointerPosition;
+                    m_InputData.PointerPreviousPosition = m_InputData.PointerCurrentPosition;
+                    m_InputData.PointerCurrentPosition = pointerPosition;
 
-                    if (mInputData.IsDragTriggered)
+                    if (m_InputData.IsDragTriggered)
                     {
                         //Drag end handling
                         //TextDebugger.Instance.LogColored($"Drag end at {mInputData.PointerCurrentPosition}", Color.red);
-                        var args = new PointerDragInteractionEventArgs(mInputData.PointerCurrentPosition, mInputData.PointerPreviousPosition, mInputData.InteractionCamera);
+                        var args = new PointerDragInteractionEventArgs(m_InputData.PointerCurrentPosition, m_InputData.PointerPreviousPosition, m_InputData.InteractionCamera);
                         var evt = InteractionEvents.PointerGrabEndEvent;
-                        if (mInputData.InteractionObject != null)
-                            mInputData.InteractionObject.RunEvent(evt, args);
-                        RunOnCamera(mInputData.InteractionCamera, evt, args);
+                        if (m_InputData.InteractionObject != null)
+                            m_InputData.InteractionObject.RunEvent(evt, args);
+                        RunOnCamera(m_InputData.InteractionCamera, evt, args);
                     }
                     else
                     {
                         //Press event handling
                         //TextDebugger.Instance.LogColored($"Pointer press at {mInputData.PointerCurrentPosition}", Color.magenta);
-                        var args = new PointerInteractionEventArgs(mInputData.PointerCurrentPosition, mInputData.InteractionCamera);
+                        var args = new PointerInteractionEventArgs(m_InputData.PointerCurrentPosition, m_InputData.InteractionCamera);
                         var evt = InteractionEvents.PointerPressEvent;
-                        if (mInputData.InteractionObject != null)
-                            mInputData.InteractionObject.RunEvent(evt, args);
-                        RunOnCamera(mInputData.InteractionCamera, evt, args);
+                        if (m_InputData.InteractionObject != null)
+                            m_InputData.InteractionObject.RunEvent(evt, args);
+                        RunOnCamera(m_InputData.InteractionCamera, evt, args);
                     }
 
                     //Up/grab end event handling
                     //TextDebugger.Instance.Log($"Pointer up at {mInputData.PointerCurrentPosition}");
                     {
-                        var args = new PointerInteractionEventArgs(mInputData.PointerCurrentPosition, mInputData.InteractionCamera);
+                        var args = new PointerInteractionEventArgs(m_InputData.PointerCurrentPosition, m_InputData.InteractionCamera);
                         var evt = InteractionEvents.PointerGrabEndEvent;
-                        if (mInputData.InteractionObject != null)
-                            mInputData.InteractionObject.RunEvent(evt, args);
-                        RunOnCamera(mInputData.InteractionCamera, evt, args);
+                        if (m_InputData.InteractionObject != null)
+                            m_InputData.InteractionObject.RunEvent(evt, args);
+                        RunOnCamera(m_InputData.InteractionCamera, evt, args);
                     }
                 }
             }
             else
             {
-                Debug.LogError(mUnsopportedPointerMsg);
+                Debug.LogError(m_UnsopportedPointerMsg);
             }
 
-            mInputData.StopInput();
+            m_InputData.StopInput();
         }
 
         /// <summary>
@@ -446,39 +474,39 @@ namespace ViJTools
         {
             var currentPosition = context.ReadValue<Vector2>();
 
-            if (mInputData.IsPointerDownTriggered)
+            if (m_InputData.IsPointerDownTriggered)
             {
-                mInputData.PointerPreviousPosition = mInputData.PointerCurrentPosition;
-                mInputData.PointerCurrentPosition = currentPosition;
+                m_InputData.PointerPreviousPosition = m_InputData.PointerCurrentPosition;
+                m_InputData.PointerCurrentPosition = currentPosition;
 
-                if (!mInputData.IsDragTriggered && mInputData.PointerTotalDelta.magnitude > mDragOrPressTriggerDistance)
+                if (!m_InputData.IsDragTriggered && m_InputData.PointerTotalDelta.magnitude > m_DragOrPressTriggerDistance)
                 {
                     //Drag start handling
                     //TextDebugger.Instance.LogColored($"Drag start at: {mInputData.PointerCurrentPosition}, prev position: {mInputData.PointerPreviousPosition}, current delta: {mInputData.PointerCurrentDelta}, Total delta magnitude {mInputData.PointerTotalDelta.magnitude}", Color.green);
-                    mInputData.TriggerDrag();
-                    var args = new PointerDragInteractionEventArgs(mInputData.PointerCurrentPosition, mInputData.PointerDownPosition, mInputData.InteractionCamera);
+                    m_InputData.TriggerDrag();
+                    var args = new PointerDragInteractionEventArgs(m_InputData.PointerCurrentPosition, m_InputData.PointerDownPosition, m_InputData.InteractionCamera);
                     var evt = InteractionEvents.PointerDragStartEvent;
-                    if (mInputData.InteractionObject != null)
-                        mInputData.InteractionObject.RunEvent(evt, args);
+                    if (m_InputData.InteractionObject != null)
+                        m_InputData.InteractionObject.RunEvent(evt, args);
 
-                    RunOnCamera(mInputData.InteractionCamera, evt, args);
+                    RunOnCamera(m_InputData.InteractionCamera, evt, args);
                 }
-                else if (mInputData.IsDragTriggered)
+                else if (m_InputData.IsDragTriggered)
                 {
                     //Drag handling
                     //TextDebugger.Instance.LogColored($"Drag performed at: {mInputData.PointerCurrentPosition}, prev position: {mInputData.PointerPreviousPosition}, current delta: {mInputData.PointerCurrentDelta}", Color.yellow);
-                    var args = new PointerDragInteractionEventArgs(mInputData.PointerCurrentPosition, mInputData.PointerPreviousPosition, mInputData.InteractionCamera);
+                    var args = new PointerDragInteractionEventArgs(m_InputData.PointerCurrentPosition, m_InputData.PointerPreviousPosition, m_InputData.InteractionCamera);
                     var evt = InteractionEvents.PointerDragEvent;
-                    if (mInputData.InteractionObject != null)
-                        mInputData.InteractionObject.RunEvent(evt, args);
+                    if (m_InputData.InteractionObject != null)
+                        m_InputData.InteractionObject.RunEvent(evt, args);
 
-                    RunOnCamera(mInputData.InteractionCamera, evt, args);
+                    RunOnCamera(m_InputData.InteractionCamera, evt, args);
                 }
             }
 
             //Pointer move handling
             {
-                if (!mCameraTracer.IsOverUI(currentPosition))
+                if (!m_CameraTracer.IsOverUI(currentPosition))
                 {
                     var cameras = GetTracebleCameras(currentPosition);
                     if (cameras.Count != 0)
@@ -487,7 +515,7 @@ namespace ViJTools
                         var evt = InteractionEvents.PointerMoveEvent;
                         var args = new PointerInteractionEventArgs(currentPosition, cam);
 
-                        if (mCameraTracer.TryTraceInteractionObject(cam, currentPosition, out var moveInteractionObj))
+                        if (m_CameraTracer.TryTraceInteractionObject(cam, currentPosition, out var moveInteractionObj))
                             moveInteractionObj.RunEvent(evt, args);
 
                         RunOnCamera(cam, evt, args);
@@ -499,16 +527,16 @@ namespace ViJTools
         private void Update()
         {
             //Handle optional drag 
-            if (mRaiseDragOnUpdates && mInputData.IsPointerDownTriggered && mInputData.IsDragTriggered)
+            if (m_RaiseDragOnUpdates && m_InputData.IsPointerDownTriggered && m_InputData.IsDragTriggered)
             {
                 //TextDebugger.Instance.Log($"Drag performed at: {mInputData.PointerCurrentPosition}, prev position: {mInputData.PointerPreviousPosition}, currend delta: {mInputData.PointerCurrentDelta}");
-                mInputData.PointerPreviousPosition = mInputData.PointerCurrentPosition;
-                var args = new PointerDragInteractionEventArgs(mInputData.PointerCurrentPosition, mInputData.PointerPreviousPosition, mInputData.InteractionCamera);
+                m_InputData.PointerPreviousPosition = m_InputData.PointerCurrentPosition;
+                var args = new PointerDragInteractionEventArgs(m_InputData.PointerCurrentPosition, m_InputData.PointerPreviousPosition, m_InputData.InteractionCamera);
                 var evt = InteractionEvents.PointerDragEvent;
-                if (mInputData.InteractionObject != null)
-                    mInputData.InteractionObject.RunEvent(evt, args);
+                if (m_InputData.InteractionObject != null)
+                    m_InputData.InteractionObject.RunEvent(evt, args);
 
-                RunOnCamera(mInputData.InteractionCamera, evt, args);
+                RunOnCamera(m_InputData.InteractionCamera, evt, args);
             }
         }
 
