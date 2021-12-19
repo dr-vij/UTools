@@ -9,13 +9,13 @@ namespace ViJTools
     /// </summary>
     public class InteractionEvent
     {
-        public static ulong mCounter = 0;
+        public static ulong m_Counter = 0;
 
-        private ulong mId;
+        private ulong m_Id;
 
-        public InteractionEvent() => mId = ++mCounter;
+        public InteractionEvent() => m_Id = ++m_Counter;
 
-        public override int GetHashCode() => mId.GetHashCode();
+        public override int GetHashCode() => m_Id.GetHashCode();
     }
 
     /// <summary>
@@ -25,29 +25,44 @@ namespace ViJTools
     public static class InteractionEvents
     {
         /// <summary>
-        /// Called when user presses on object
+        /// Raised when user presses on object
         /// </summary>
         public static readonly InteractionEvent PointerPressEvent = new InteractionEvent();
 
         /// <summary>
-        /// Called when user moves pointer over object
+        /// Raised when user moves pointer over object
         /// </summary>
         public static readonly InteractionEvent PointerMoveEvent = new InteractionEvent();
 
         /// <summary>
-        /// Called when user starts dragging object
+        /// Raised when user starts dragging object
         /// </summary>
         public static readonly InteractionEvent PointerDragStartEvent = new InteractionEvent();
 
         /// <summary>
-        /// Called when user drag
+        /// Raised when user drag
         /// </summary>
         public static readonly InteractionEvent PointerDragEvent = new InteractionEvent();
 
         /// <summary>
-        /// Called when user stops drag
+        /// Raised when user stops drag (remove or add pointer)
         /// </summary>
         public static readonly InteractionEvent PointerDragEndEvent = new InteractionEvent();
+
+        /// <summary>
+        /// Raised when user starts drag with two pointers
+        /// </summary>
+        public static readonly InteractionEvent TwoPointersDragStartEvent = new InteractionEvent();
+
+        /// <summary>
+        /// Raised when user drags with two pointers
+        /// </summary>
+        public static readonly InteractionEvent TwoPointersDragEvent = new InteractionEvent();
+
+        /// <summary>
+        /// Raised when user stops drag with two pointers (remove or add pointer)
+        /// </summary>
+        public static readonly InteractionEvent TwoPointersDragEndEvent = new InteractionEvent();
 
         /// <summary>
         /// Called when pointer is down on object

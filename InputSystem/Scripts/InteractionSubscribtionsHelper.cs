@@ -12,7 +12,7 @@ namespace ViJTools
         /// <summary>
         /// buffer for effective usage of getcomponent
         /// </summary>
-        private static List<Transform> mTransformsBuffer = new List<Transform>(100);
+        private static List<Transform> m_TransformsBuffer = new List<Transform>(100);
 
         /// <summary>
         /// Checks if Transform has InteractionIgnorer
@@ -95,8 +95,8 @@ namespace ViJTools
         /// <param name="unityObject"></param>
         public static void MakeTreeInteractionIgnorer(this GameObject unityObject, bool includeInactive = true)
         {
-            unityObject.GetComponentsInChildren(includeInactive, mTransformsBuffer);
-            foreach (var t in mTransformsBuffer)
+            unityObject.GetComponentsInChildren(includeInactive, m_TransformsBuffer);
+            foreach (var t in m_TransformsBuffer)
                 MakeObjectIgnorer(t.gameObject);
         }
 
@@ -114,8 +114,8 @@ namespace ViJTools
         /// <param name="includeInactive"></param>
         public static void UnmakeTreeInteractionIgnorer(this GameObject unityObject, bool includeInactive = true)
         {
-            unityObject.GetComponentsInChildren(includeInactive, mTransformsBuffer);
-            foreach (var t in mTransformsBuffer)
+            unityObject.GetComponentsInChildren(includeInactive, m_TransformsBuffer);
+            foreach (var t in m_TransformsBuffer)
                 UnmakeObjectIgnorer(t.gameObject);
         }
 

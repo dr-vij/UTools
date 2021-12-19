@@ -11,11 +11,11 @@ namespace ViJTools
     /// </summary>
     public class InteractionObject : DisposableMonobehaviour
     {
-        private Dictionary<InteractionEvent, List<InteractionSubscribtion>> mAllSubscribtions = new Dictionary<InteractionEvent, List<InteractionSubscribtion>>();
+        private Dictionary<InteractionEvent, List<InteractionSubscribtion>> m_AllSubscribtions = new Dictionary<InteractionEvent, List<InteractionSubscribtion>>();
 
         public bool HasEventSubscribtion(InteractionEvent evt)
         {
-            return mAllSubscribtions.TryGetValue(evt, out var subscribtions) && subscribtions.Count != 0;
+            return m_AllSubscribtions.TryGetValue(evt, out var subscribtions) && subscribtions.Count != 0;
         }
 
         public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false) where TEventArgs : InteractionEventArgs
@@ -33,7 +33,7 @@ namespace ViJTools
         /// <param name="args"></param>
         public void RunEvent(InteractionEvent evt, InteractionEventArgs args)
         {
-            if (mAllSubscribtions.TryGetValue(evt, out var handlers))
+            if (m_AllSubscribtions.TryGetValue(evt, out var handlers))
             {
                 foreach(var handler in handlers)
                 {
@@ -61,17 +61,17 @@ namespace ViJTools
 
         private void AddSubscribtion<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false) where TEventArgs : InteractionEventArgs
         {
-            if (!mAllSubscribtions.TryGetValue(evt, out var subscribtions))
+            if (!m_AllSubscribtions.TryGetValue(evt, out var subscribtions))
             {
                 subscribtions = new List<InteractionSubscribtion>();
-                mAllSubscribtions.Add(evt, subscribtions);
+                m_AllSubscribtions.Add(evt, subscribtions);
             }
             subscribtions.Add(new InteractionSubscribtion(handler, handleEvent, ignoreHandled));
         }
 
         private void RemoveSubscribtion<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
         {
-            if (mAllSubscribtions.TryGetValue(evt, out var subscribtions))
+            if (m_AllSubscribtions.TryGetValue(evt, out var subscribtions))
                 subscribtions.RemoveAll((subscribtion) => subscribtion.Handler == (Delegate)handler);
         }
     }
