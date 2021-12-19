@@ -100,7 +100,7 @@ public class TestObject : MonoBehaviour
         m_WasScaled = false;
         m_InitialScale = transform.localScale;
         m_IsGrabbed = true;
-        transform.localScale = m_InitialScale * 1.2f;
+        transform.localScale = m_InitialScale * 1.05f;
     }
 
     private void OnGrabEnd(object sender, PointerInteractionEventArgs args)

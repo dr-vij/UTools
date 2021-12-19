@@ -64,7 +64,7 @@ namespace ViJTools
 
             pointer.PointerUpdateEvent += OnPointerUpdate;
             m_Pointers.Add(pointerId, pointer);
-            Debug.Log($"Gesture {GestureId} TestPointer down {pointerId}, position {pointer.CurrentPosition}");
+            //Debug.Log($"Gesture {GestureId} TestPointer down {pointerId}, position {pointer.CurrentPosition}");
         }
 
         public void RemovePointer(int pointerId, Vector2 position)
@@ -99,7 +99,7 @@ namespace ViJTools
             pointer.PointerUpdateEvent -= OnPointerUpdate;
             m_Pointers.Remove(pointerId);
             //POINTER i UP;
-            Debug.Log($"Gesture {GestureId} TestPointer up {pointerId}, position {pointer.CurrentPosition}");
+            //Debug.Log($"Gesture {GestureId} TestPointer up {pointerId}, position {pointer.CurrentPosition}");
         }
 
         private void OnPointerUpdate(InteractionPointer pointer)
@@ -143,7 +143,7 @@ namespace ViJTools
             }
 
             //POINTER i UPDATE
-            Debug.Log($"Gesture {GestureId} TestPointer update {pointer.ID}, position {pointer.CurrentPosition}");
+            //Debug.Log($"Gesture {GestureId} TestPointer update {pointer.ID}, position {pointer.CurrentPosition}");
         }
 
         public void UpdateAllPointers()

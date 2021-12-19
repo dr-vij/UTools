@@ -134,9 +134,9 @@ GameObject:
   - component: {fileID: 221516828}
   - component: {fileID: 221516832}
   - component: {fileID: 221516831}
-  - component: {fileID: 221516830}
   - component: {fileID: 221516829}
   - component: {fileID: 221516833}
+  - component: {fileID: 221516834}
   m_Layer: 0
   m_Name: Test3
   m_TagString: Untagged
@@ -153,8 +153,8 @@ Transform:
   m_GameObject: {fileID: 221516827}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -5.19, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1859019367}
   m_RootOrder: 2
@@ -171,19 +171,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783e33b19279c472588b4e0c84624f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!135 &221516830
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 221516827}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &221516831
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -251,6 +238,19 @@ MonoBehaviour:
   m_SubscribeMove: 1
   m_SubscribeGrab: 1
   m_SubscribeScale: 1
+--- !u!65 &221516834
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221516827}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &385365120
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,9 +363,9 @@ GameObject:
   - component: {fileID: 552539377}
   - component: {fileID: 552539381}
   - component: {fileID: 552539380}
-  - component: {fileID: 552539379}
   - component: {fileID: 552539378}
   - component: {fileID: 552539382}
+  - component: {fileID: 552539383}
   m_Layer: 0
   m_Name: Test1
   m_TagString: Untagged
@@ -382,8 +382,8 @@ Transform:
   m_GameObject: {fileID: 552539376}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1859019367}
   m_RootOrder: 0
@@ -400,19 +400,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783e33b19279c472588b4e0c84624f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!135 &552539379
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 552539376}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &552539380
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -480,6 +467,19 @@ MonoBehaviour:
   m_SubscribeMove: 1
   m_SubscribeGrab: 1
   m_SubscribeScale: 1
+--- !u!65 &552539383
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 552539376}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -669,9 +669,9 @@ GameObject:
   - component: {fileID: 1026530402}
   - component: {fileID: 1026530406}
   - component: {fileID: 1026530405}
-  - component: {fileID: 1026530404}
   - component: {fileID: 1026530403}
   - component: {fileID: 1026530407}
+  - component: {fileID: 1026530408}
   m_Layer: 0
   m_Name: Test2
   m_TagString: Untagged
@@ -688,8 +688,8 @@ Transform:
   m_GameObject: {fileID: 1026530401}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 3.21, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1859019367}
   m_RootOrder: 1
@@ -706,19 +706,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783e33b19279c472588b4e0c84624f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!135 &1026530404
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1026530401}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1026530405
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -786,6 +773,19 @@ MonoBehaviour:
   m_SubscribeMove: 1
   m_SubscribeGrab: 1
   m_SubscribeScale: 1
+--- !u!65 &1026530408
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1026530401}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1647769570
 GameObject:
   m_ObjectHideFlags: 0
@@ -873,9 +873,9 @@ GameObject:
   - component: {fileID: 1742684096}
   - component: {fileID: 1742684100}
   - component: {fileID: 1742684099}
-  - component: {fileID: 1742684098}
   - component: {fileID: 1742684097}
   - component: {fileID: 1742684101}
+  - component: {fileID: 1742684102}
   m_Layer: 0
   m_Name: Test4
   m_TagString: Untagged
@@ -910,19 +910,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783e33b19279c472588b4e0c84624f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!135 &1742684098
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1742684095}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1742684099
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -990,6 +977,19 @@ MonoBehaviour:
   m_SubscribeMove: 1
   m_SubscribeGrab: 1
   m_SubscribeScale: 1
+--- !u!65 &1742684102
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1742684095}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1777108267
 GameObject:
   m_ObjectHideFlags: 0
