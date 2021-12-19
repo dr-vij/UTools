@@ -20,7 +20,7 @@ namespace ViJTools
         /// </summary>
         [SerializeField] private bool m_RaiseDragOnUpdates = true;
 
-        private Actions m_Actions;
+        private InputActions m_Actions;
         private List<Camera> m_Cameras = new List<Camera>();
         private CameraTracer m_CameraTracer = new CameraTracer();
 
@@ -49,7 +49,7 @@ namespace ViJTools
         /// </summary>
         private void OnEnable()
         {
-            m_Actions = new Actions();
+            m_Actions = new InputActions();
             m_Actions.GestureActions.Enable();
 
             m_Actions.GestureActions.Pointer.performed += OnPointerEvent;
@@ -61,7 +61,7 @@ namespace ViJTools
         /// </summary>
         private void OnDisable()
         {
-            m_Actions.Dispose();
+            m_Actions.Disable();
 
             m_Actions.GestureActions.Pointer.performed -= OnPointerEvent;
             m_Actions.GestureActions.Pointer.canceled -= OnPointerEvent;
