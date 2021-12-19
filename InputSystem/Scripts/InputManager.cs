@@ -213,8 +213,6 @@ namespace ViJTools
             return m_ActiveDevice == null || m_ActiveDevice.GetType() == context.control.device.GetType();
         }
 
-      
-
         private List<Camera> GetTracebleCameras(Vector2 position)
         {
             if (m_Cameras.Count == 0)

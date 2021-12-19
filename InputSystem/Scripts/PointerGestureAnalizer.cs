@@ -77,7 +77,7 @@ namespace ViJTools
             switch (PointersCount)
             {
                 case 1:
-                    if (!mPressInterrupted)
+                    if (!mPressInterrupted && !mOnePointerDragStarted && !mTwoPointerDragStarted)
                     {
                         var pressArgs = new PointerInteractionEventArgs(pointer.CurrentPosition, InteractionCamera);
                         InteractionObject.RunEvent(InteractionEvents.PointerPressEvent, pressArgs);
