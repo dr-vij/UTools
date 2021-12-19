@@ -24,6 +24,8 @@ namespace ViJTools
 
         public int PointersCount => m_Pointers.Count;
 
+        public IEnumerable<InteractionPointer> Pointers => m_Pointers.Values;
+
         public PointerGestureAnalizer(InteractionObject interactionObject, Camera interactionCamera)
         {
             InteractionObject = interactionObject;

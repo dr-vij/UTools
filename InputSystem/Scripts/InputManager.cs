@@ -33,6 +33,8 @@ namespace ViJTools
 
         public int DragOrPressTriggerDistance => m_DragOrPressTriggerDistance;
 
+        public IEnumerable<PointerGestureAnalizer> ActiveGestures => mActiveGestures.Values;
+
         public void RegisterCamera(Camera cam)
         {
             if (!m_Cameras.Contains(cam))

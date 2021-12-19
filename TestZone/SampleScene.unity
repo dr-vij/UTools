@@ -269,7 +269,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &385365121
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -609,8 +609,8 @@ Camera:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.26415092, g: 0.26415092, b: 0.26415092, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -1160,6 +1160,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ae4914a38ec849b697084ec176879b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mCanvasRoot: {fileID: 385365124}
+  mPointerPreviewPrefab: {fileID: 5687214962823301172, guid: 882cbad0e82c2434c8c0bf0bba3d5f46, type: 3}
 --- !u!1 &1976026522
 GameObject:
   m_ObjectHideFlags: 0
@@ -1308,7 +1310,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3138675635625551689, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4787212193486344541, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_Color.a
