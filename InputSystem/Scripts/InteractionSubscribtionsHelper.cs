@@ -160,6 +160,28 @@ namespace ViJTools
         }
 
         /// <summary>
+        /// Unified two pointer drag subscription
+        /// </summary>
+        /// <param name="interactionObject"></param>
+        /// <param name="twoPointersDragStartHandler"></param>
+        /// <param name="twoPointersDragHandler"></param>
+        /// <param name="twoPointersDragEndHandler"></param>
+        /// <param name="handleEvents"></param>
+        /// <param name="ignoreHandled"></param>
+        /// <returns></returns>
+        public static IDisposable SubscribeTwoPointersDragEnvent(this InteractionObject interactionObject,
+            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragStartHandler,
+            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragHandler,
+            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            var sub1 = interactionObject.Subscribe(InteractionEvents.TwoPointersDragStartEvent, twoPointersDragStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObject.Subscribe(InteractionEvents.TwoPointersDragEvent, twoPointersDragHandler, handleEvents, ignoreHandled);
+            var sub3 = interactionObject.Subscribe(InteractionEvents.TwoPointersDragEndEvent, twoPointersDragEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() => { sub1.Dispose(); sub2.Dispose(); sub3.Dispose(); });
+        }
+
+        /// <summary>
         /// Unified grab/grab end subscription
         /// </summary>
         /// <param name="interactionObject"></param>

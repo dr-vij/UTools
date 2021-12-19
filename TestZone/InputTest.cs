@@ -37,16 +37,16 @@ public class InputTest : MonoBehaviour
 
     private void OnDragStart(object sender, PointerDragInteractionEventArgs args)
     {
-        transform.position += (Vector3)(args.Position - args.PrevPosition) / 100;
+        transform.position += (Vector3)(args.PointerPosition - args.PointerPrevPosition) / 100;
     }
 
     private void OnDrag(object sender, PointerDragInteractionEventArgs args)
     {
-        transform.position += (Vector3)(args.Position - args.PrevPosition) / 100;
+        transform.position += (Vector3)(args.PointerPosition - args.PointerPrevPosition) / 100;
     }
 
     private void OnDragEnd(object sender, PointerDragInteractionEventArgs args)
     {
-        transform.position += (Vector3)(args.Position - args.PrevPosition) / 100;
+        transform.position += (Vector3)(args.PointerPosition - args.PointerPrevPosition) / 100;
     }
 }

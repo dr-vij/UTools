@@ -129,12 +129,12 @@ namespace ViJTools
                     if (mTwoPointerDragStarted)
                     {
                         var args = new TwoPointersDragInteractionEventArgs(pointer1.CurrentPosition, pointer1.PrevPosition, pointer2.CurrentPosition, pointer2.PrevPosition, InteractionCamera);
-                        InteractionObject.RunEvent(InteractionEvents.TwoPointersDragStartEvent, args);
+                        InteractionObject.RunEvent(InteractionEvents.TwoPointersDragEvent, args);
                     }
                     else if (Vector2.Distance(pointer1.CurrentPosition, pointer1.TrackStartPosition) > triggerDistance && Vector2.Distance(pointer2.CurrentPosition, pointer2.TrackStartPosition) > triggerDistance)
                     {
                         var args = new TwoPointersDragInteractionEventArgs(pointer1.CurrentPosition, pointer1.PrevPosition, pointer2.CurrentPosition, pointer2.PrevPosition, InteractionCamera);
-                        InteractionObject.RunEvent(InteractionEvents.TwoPointersDragEvent, args);
+                        InteractionObject.RunEvent(InteractionEvents.TwoPointersDragStartEvent, args);
                         mTwoPointerDragStarted = true;
                     }
                     break;

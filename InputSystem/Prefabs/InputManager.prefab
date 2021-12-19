@@ -44,3 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c22162ba54dfe4d348428a3045933c46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_DragOrPressTriggerDistance: 50
+  m_RaiseDragOnUpdates: 1

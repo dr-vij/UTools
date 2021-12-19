@@ -246,10 +246,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01fad7cdc5b2d462a9229d77f97808d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mSubscribeDrag: 1
-  mSubscribePress: 1
-  mSubscribeMove: 1
-  mSubscribeGrab: 1
+  m_SubscribeDrag: 1
+  m_SubscribePress: 1
+  m_SubscribeMove: 1
+  m_SubscribeGrab: 1
+  m_SubscribeScale: 1
 --- !u!1 &385365120
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,10 +475,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01fad7cdc5b2d462a9229d77f97808d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mSubscribeDrag: 1
-  mSubscribePress: 1
-  mSubscribeMove: 1
-  mSubscribeGrab: 1
+  m_SubscribeDrag: 1
+  m_SubscribePress: 1
+  m_SubscribeMove: 1
+  m_SubscribeGrab: 1
+  m_SubscribeScale: 1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -779,10 +781,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01fad7cdc5b2d462a9229d77f97808d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mSubscribeDrag: 1
-  mSubscribePress: 1
-  mSubscribeMove: 1
-  mSubscribeGrab: 1
+  m_SubscribeDrag: 1
+  m_SubscribePress: 1
+  m_SubscribeMove: 1
+  m_SubscribeGrab: 1
+  m_SubscribeScale: 1
 --- !u!1 &1647769570
 GameObject:
   m_ObjectHideFlags: 0
@@ -982,10 +985,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01fad7cdc5b2d462a9229d77f97808d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mSubscribeDrag: 1
-  mSubscribePress: 1
-  mSubscribeMove: 1
-  mSubscribeGrab: 1
+  m_SubscribeDrag: 1
+  m_SubscribePress: 1
+  m_SubscribeMove: 1
+  m_SubscribeGrab: 1
+  m_SubscribeScale: 1
 --- !u!1 &1777108267
 GameObject:
   m_ObjectHideFlags: 0
@@ -1416,22 +1420,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1728285502329229932, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
-      propertyPath: mTestTransform1
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1728285502329229932, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
-      propertyPath: mTestTransform2
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1728285502329229932, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
-      propertyPath: mRaiseDragOnUpdates
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1728285502329229932, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
-      propertyPath: mDragOrPressTriggerDistance
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 2360946131813771847, guid: 939b897ee82d442dfaf5b95a59923922, type: 3}
       propertyPath: m_RootOrder
       value: 2

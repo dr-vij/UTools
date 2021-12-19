@@ -44,9 +44,9 @@ namespace ViJTools
     /// </summary>
     public class PointerInteractionEventArgs : InteractionEventArgs
     {
-        public Vector2 Position { get; private set; }
+        public Vector2 PointerPosition { get; private set; }
 
-        public PointerInteractionEventArgs(Vector2 position, Camera camera) : base(camera) => Position = position;
+        public PointerInteractionEventArgs(Vector2 position, Camera camera) : base(camera) => PointerPosition = position;
     }
 
     /// <summary>
@@ -54,21 +54,25 @@ namespace ViJTools
     /// </summary>
     public class PointerDragInteractionEventArgs : PointerInteractionEventArgs
     {
-        public Vector2 PrevPosition { get; private set; }
+        public Vector2 PointerPrevPosition { get; private set; }
 
-        public PointerDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Camera camera) : base(position, camera) => PrevPosition = prevPosition;
+        public PointerDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Camera camera) : base(position, camera) => PointerPrevPosition = prevPosition;
     }
 
     public class TwoPointersDragInteractionEventArgs : PointerDragInteractionEventArgs
     {
-        public Vector2 PrevPositionPointer2 { get; private set; }
-        public Vector2 PositionPointer2 { get; private set; }
+        public Vector2 SecondaryPointerPosition { get; private set; }
+        public Vector2 SecondaryPointerPrevPosition { get; private set; }
+
+        public Vector2 PointersCenter => (PointerPosition + SecondaryPointerPosition) * 0.5f;
+
+        public Vector2 PointerCenterPrev => (PointerPrevPosition + SecondaryPointerPrevPosition) * 0.5f;
 
         public TwoPointersDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Vector2 positionPointer2, Vector2 prevPositionPointer2, Camera camera) :
             base(position, prevPosition, camera)
         {
-            PositionPointer2 = positionPointer2;
-            PrevPositionPointer2 = prevPositionPointer2;
+            SecondaryPointerPrevPosition = positionPointer2;
+            SecondaryPointerPosition = prevPositionPointer2;
         }
     }
 }
