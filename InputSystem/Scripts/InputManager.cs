@@ -15,11 +15,6 @@ namespace ViJTools
         /// </summary>
         [SerializeField] private int m_DragOrPressTriggerDistance = 0;
 
-        /// <summary>
-        /// Raise drags on update if true
-        /// </summary>
-        [SerializeField] private bool m_RaiseDragOnUpdates = true;
-
         private InputActions m_Actions;
         private List<Camera> m_Cameras = new List<Camera>();
         private CameraTracer m_CameraTracer = new CameraTracer();
@@ -172,7 +167,14 @@ namespace ViJTools
                     }
                     else
                     {
-                        //TODO: CAMERA INTERACTION CAN BE HERE
+                        var cameraInteractionObj = camera.GetComponent<InteractionObject>();
+                        if (!mActiveGestures.TryGetValue(cameraInteractionObj, out var gesture))
+                        {
+                            gesture = new PointerGestureAnalizer(cameraInteractionObj, camera);
+                            mActiveGestures.Add(cameraInteractionObj, gesture);
+                        }
+
+                        gesture?.CreatePointer(data.InputId, data.Position);
                     }
                 }
             }
@@ -229,13 +231,10 @@ namespace ViJTools
                 cameraInteractionObject.RunEvent(evt, args);
         }
 
-        public static void Set2dPos(Camera cam, Transform t, Vector2 pos)
+        private void Update()
         {
-            var ray = cam.ScreenPointToRay(pos);
-            var plane = new Plane(Vector3.back, 0);
-            plane.Raycast(ray, out var enter);
-            var point3d = ray.GetPoint(enter);
-            t.transform.position = point3d;
+            foreach (var gesture in mActiveGestures)
+                gesture.Value.UpdateAllPointers();
         }
     }
 }
