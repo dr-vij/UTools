@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657815, g: 0.49641192, b: 0.57481617, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783e33b19279c472588b4e0c84624f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IsSoloInteraction: 1
+  m_IsSoloInteraction: 0
 --- !u!23 &221516831
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -934,7 +934,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 783e33b19279c472588b4e0c84624f0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IsSoloInteraction: 1
+  m_IsSoloInteraction: 0
 --- !u!23 &1742684099
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1027,7 +1027,7 @@ GameObject:
   - component: {fileID: 1777108271}
   - component: {fileID: 1777108270}
   - component: {fileID: 1777108269}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1198,7 +1198,7 @@ GameObject:
   - component: {fileID: 1976026523}
   - component: {fileID: 1976026525}
   - component: {fileID: 1976026524}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1335,7 +1335,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3138675635625551689, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4787212193486344541, guid: 7c543ef698de448c9903de5efdc2823a, type: 3}
       propertyPath: m_Color.a

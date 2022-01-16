@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -142,10 +143,11 @@ namespace ViJTools
         /// <returns></returns>
         public bool IsOverUI(Vector2 pos)
         {
+            var mask = LayerSettings.RaycastMask & ~Physics.IgnoreRaycastLayer;
             var eventData = new PointerEventData(EventSystem.current) { position = pos };
             var results = new List<RaycastResult>();
             EventSystem.current.RaycastAll(eventData, results);
-            return results.Count > 0;
+            return results.Count != 0 && results.Any(c => (1 << c.gameObject.layer & mask) != 0);
         }
 
         /// <summary>

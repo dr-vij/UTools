@@ -20,6 +20,7 @@ public class InputTest : MonoBehaviour
     private void Awake()
     {
         InputManager.Instance.RegisterCamera(Camera.main);
+        InputManager.Instance.CameraTracer.LayerSettings.SetLayers("Default");
         mCameraInteractionObject = Camera.main.GetComponent<InteractionObject>();
 
         mCameraInteractionObject.SubscribePointerPressEvent(OnPress);
