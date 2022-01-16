@@ -13,6 +13,15 @@ namespace ViJTools
     {
         private Dictionary<InteractionEvent, List<InteractionSubscribtion>> m_AllSubscribtions = new Dictionary<InteractionEvent, List<InteractionSubscribtion>>();
 
+        [SerializeField] private bool m_IsSoloInteraction = true;
+
+        public bool IsSoloInteraction => m_IsSoloInteraction;
+
+        public PointerGestureAnalizer CreateAnalizer(Camera camera)
+        {
+            return new PointerGestureAnalizer(this, camera);
+        }
+
         public bool HasEventSubscribtion(InteractionEvent evt)
         {
             return m_AllSubscribtions.TryGetValue(evt, out var subscribtions) && subscribtions.Count != 0;
@@ -35,7 +44,7 @@ namespace ViJTools
         {
             if (m_AllSubscribtions.TryGetValue(evt, out var handlers))
             {
-                foreach(var handler in handlers)
+                foreach (var handler in handlers)
                 {
                     var isHandled = args.IsHandled;
                     if (!isHandled || handler.IgnoreHandled)

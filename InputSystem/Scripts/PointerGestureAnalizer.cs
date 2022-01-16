@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace ViJTools
 {
-    public class PointerGestureAnalizer : DisposableObject
+    public class PointerGestureAnalizer
     {
         private static int m_IdCounter = -1;
 
@@ -14,7 +14,7 @@ namespace ViJTools
         private bool mOnePointerDragStarted = false;
         private bool mTwoPointerDragStarted = false;
 
-        protected Dictionary<int, InteractionPointer> m_Pointers = new Dictionary<int, InteractionPointer>();
+        private Dictionary<int, InteractionPointer> m_Pointers = new Dictionary<int, InteractionPointer>();
 
         public Camera InteractionCamera { get; private set; }
 
@@ -66,7 +66,6 @@ namespace ViJTools
 
             pointer.PointerUpdateEvent += OnPointerUpdate;
             m_Pointers.Add(pointerId, pointer);
-            //Debug.Log($"Gesture {GestureId} TestPointer down {pointerId}, position {pointer.CurrentPosition}");
         }
 
         public void RemovePointer(int pointerId, Vector2 position)
@@ -100,8 +99,6 @@ namespace ViJTools
 
             pointer.PointerUpdateEvent -= OnPointerUpdate;
             m_Pointers.Remove(pointerId);
-            //POINTER i UP;
-            //Debug.Log($"Gesture {GestureId} TestPointer up {pointerId}, position {pointer.CurrentPosition}");
         }
 
         private void OnPointerUpdate(InteractionPointer pointer)
@@ -143,9 +140,6 @@ namespace ViJTools
                 default:
                     break;
             }
-
-            //POINTER i UPDATE
-            //Debug.Log($"Gesture {GestureId} TestPointer update {pointer.ID}, position {pointer.CurrentPosition}");
         }
 
         public void UpdateAllPointers()
@@ -185,13 +179,13 @@ namespace ViJTools
         {
             foreach (var pointer in m_Pointers.Values)
                 if (pointer != excluded)
-                    pointer.ResetLastPosition();
+                    pointer.SilentResetLastPosition();
         }
 
         private void ResetDragFlagsAndPointerPositions(bool pressIsInterrupted = false)
         {
             foreach (var p in m_Pointers.Values)
-                p.ResetPointerTracking();
+                p.SilentResetPointerTracking();
 
             mPressInterrupted = pressIsInterrupted;
             mOnePointerDragStarted = false;

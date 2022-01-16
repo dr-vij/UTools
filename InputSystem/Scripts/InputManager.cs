@@ -155,28 +155,38 @@ namespace ViJTools
                 if (goodCameras.Count != 0)
                 {
                     var camera = goodCameras[0];
-                    if (m_CameraTracer.TryTraceInteractionObject(camera, data.Position, out var interactionObject))
-                    {
-                        if (!mActiveGestures.TryGetValue(interactionObject, out var gesture))
-                        {
-                            gesture = new PointerGestureAnalizer(interactionObject, camera);
-                            mActiveGestures.Add(interactionObject, gesture);
-                        }
+                    var cameraInteractionObj = camera.GetComponent<InteractionObject>();
 
-                        gesture?.CreatePointer(data.InputId, data.Position);
-                    }
-                    else
-                    {
-                        var cameraInteractionObj = camera.GetComponent<InteractionObject>();
-                        if (!mActiveGestures.TryGetValue(cameraInteractionObj, out var gesture))
-                        {
-                            gesture = new PointerGestureAnalizer(cameraInteractionObj, camera);
-                            mActiveGestures.Add(cameraInteractionObj, gesture);
-                        }
-
-                        gesture?.CreatePointer(data.InputId, data.Position);
-                    }
+                    if (m_CameraTracer.TryTraceInteractionObject(camera, data.Position, out var interactionObject) && TryGetOrCreateGestureAnalizer(interactionObject, camera, out var gesture))
+                        gesture.CreatePointer(data.InputId, data.Position);
+                    else if (TryGetOrCreateGestureAnalizer(cameraInteractionObj, camera, out gesture))
+                        gesture.CreatePointer(data.InputId, data.Position);
                 }
+            }
+        }
+
+        private bool TryGetOrCreateGestureAnalizer(InteractionObject interactionObj, Camera camera, out PointerGestureAnalizer gestureAnalizer)
+        {
+            gestureAnalizer = null;
+            if (interactionObj == null)
+                return false;
+
+            if (!mActiveGestures.TryGetValue(interactionObj, out gestureAnalizer))
+            {
+                //check if we already have solo interaction and prevent creating new gesture analizers
+                if (mActiveGestures.Any(c => c.Key.IsSoloInteraction))
+                    return false;
+                //check if this object is solo interaction and prevent its gesture analizer creation if another gestures exist
+                if (interactionObj.IsSoloInteraction && mActiveGestures.Count != 0)
+                    return false;
+
+                gestureAnalizer = interactionObj.CreateAnalizer(camera);
+                mActiveGestures.Add(interactionObj, gestureAnalizer);
+                return true;
+            }
+            else
+            {
+                return true;
             }
         }
 

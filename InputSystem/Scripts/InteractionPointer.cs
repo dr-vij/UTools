@@ -30,15 +30,15 @@ namespace ViJTools
         /// <summary>
         /// Sets previous position current
         /// </summary>
-        public void ResetLastPosition()
+        public void SilentResetLastPosition()
         {
             PrevPosition = CurrentPosition;
         }
 
         /// <summary>
-        /// Sets TrackStartPosition Prev position Current position
+        /// Sets TrackStartPosition and PrevPosition from Current position
         /// </summary>
-        public void ResetPointerTracking()
+        public void SilentResetPointerTracking()
         {
             TrackStartPosition = CurrentPosition;
             PrevPosition = CurrentPosition;

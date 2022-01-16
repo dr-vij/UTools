@@ -106,10 +106,6 @@ namespace ViJTools
             }
         }
 
-        public RaycastHit[] Hits => mHits;
-
-        public int CurrentHitCount => mCurrentHitCount;
-
         public LayerSettingsContainer LayerSettings => mLayerSettings;
 
         /// <summary>
@@ -119,24 +115,6 @@ namespace ViJTools
         public CameraTracer(int raycastCapacity = 100)
         {
             RaycastCapacity = raycastCapacity;
-        }
-
-        /// <summary>
-        /// Traces camera and saves result to current mHits. The count of hits is under mCurrentHitCount
-        /// </summary>
-        /// <param name="position"></param>
-        /// <param name="camera"></param>
-        public void TraceCamera3D(Vector2 position, Camera camera)
-        {
-            var mask = LayerSettings.GetMaskForCamera(camera);
-            var ray = camera.ScreenPointToRay(position, Camera.MonoOrStereoscopicEye.Mono);
-            var raycastLimitPlane = new Plane(-camera.transform.forward, camera.transform.position + camera.transform.forward * camera.farClipPlane);
-            raycastLimitPlane.Raycast(ray, out var rayDistance);
-            mCurrentHitCount = Physics.RaycastNonAlloc(ray, mHits, rayDistance, mask);
-            if (mCurrentHitCount == mRaycastCapacity)
-                Debug.LogWarning("Hit capacity limit reached, I recommend you to increase mRaycastHitCapacity");
-
-            Array.Sort(mHits, 0, mCurrentHitCount, HitDistanceComparer);
         }
 
         /// <summary>
@@ -179,6 +157,24 @@ namespace ViJTools
         public bool CanBeTraced(Camera camera, Vector2 coord)
         {
             return camera.pixelRect.Contains(coord) && camera.enabled && camera.gameObject.activeInHierarchy;
+        }
+
+        /// <summary>
+        /// Traces camera and saves result to current mHits. The count of hits is under mCurrentHitCount
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="camera"></param>
+        private void TraceCamera3D(Vector2 position, Camera camera)
+        {
+            var mask = LayerSettings.GetMaskForCamera(camera);
+            var ray = camera.ScreenPointToRay(position, Camera.MonoOrStereoscopicEye.Mono);
+            var raycastLimitPlane = new Plane(-camera.transform.forward, camera.transform.position + camera.transform.forward * camera.farClipPlane);
+            raycastLimitPlane.Raycast(ray, out var rayDistance);
+            mCurrentHitCount = Physics.RaycastNonAlloc(ray, mHits, rayDistance, mask);
+            if (mCurrentHitCount == mRaycastCapacity)
+                Debug.LogWarning("Hit capacity limit reached, I recommend you to increase mRaycastHitCapacity");
+
+            Array.Sort(mHits, 0, mCurrentHitCount, HitDistanceComparer);
         }
     }
 }
