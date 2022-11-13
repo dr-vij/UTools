@@ -129,7 +129,7 @@ namespace UnityTools
         {
             TraceCamera3D(position, camera);
             for (int i = 0; i < mCurrentHitCount; i++)
-                if (!mHits[i].transform.HasInteractionIgnorer() && mHits[i].transform.TryFindInteractionObject(out result))
+                if (!mHits[i].collider.transform.HasInteractionIgnorer() && mHits[i].collider.transform.TryFindInteractionObject(out result))
                     return true;
 
             result = null;
