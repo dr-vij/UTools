@@ -30,6 +30,8 @@ namespace UnityTools
 
         public IEnumerable<PointerGestureAnalizer> ActiveGestures => m_ActiveGestures.Values;
 
+        public int ActiveGesturesCount => m_ActiveGestures.Count;
+
         public void RegisterCamera(Camera cam)
         {
             if (!m_Cameras.Contains(cam))
