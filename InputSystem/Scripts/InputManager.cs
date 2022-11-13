@@ -22,13 +22,13 @@ namespace UnityTools
         private InputDevice m_ActiveDevice;
         private HashSet<int> m_ActiveTouches = new HashSet<int>();
         private bool m_IsMouseOrPenInputStarted;
-        private Dictionary<InteractionObject, PointerGestureAnalizer> mActiveGestures = new Dictionary<InteractionObject, PointerGestureAnalizer>();
+        private Dictionary<InteractionObject, PointerGestureAnalizer> m_ActiveGestures = new Dictionary<InteractionObject, PointerGestureAnalizer>();
 
         public CameraTracer CameraTracer => m_CameraTracer;
 
         public int DragOrPressTriggerDistance => m_DragOrPressTriggerDistance;
 
-        public IEnumerable<PointerGestureAnalizer> ActiveGestures => mActiveGestures.Values;
+        public IEnumerable<PointerGestureAnalizer> ActiveGestures => m_ActiveGestures.Values;
 
         public void RegisterCamera(Camera cam)
         {
@@ -171,29 +171,26 @@ namespace UnityTools
             if (interactionObj == null)
                 return false;
 
-            if (!mActiveGestures.TryGetValue(interactionObj, out gestureAnalizer))
+            if (!m_ActiveGestures.TryGetValue(interactionObj, out gestureAnalizer))
             {
                 //check if we already have solo interaction and prevent creating new gesture analizers
-                if (mActiveGestures.Any(c => c.Key.IsSoloInteraction))
+                if (m_ActiveGestures.Any(c => c.Key.IsSoloInteraction))
                     return false;
                 //check if this object is solo interaction and prevent its gesture analizer creation if another gestures exist
-                if (interactionObj.IsSoloInteraction && mActiveGestures.Count != 0)
+                if (interactionObj.IsSoloInteraction && m_ActiveGestures.Count != 0)
                     return false;
 
                 gestureAnalizer = interactionObj.CreateAnalizer(camera);
-                mActiveGestures.Add(interactionObj, gestureAnalizer);
+                m_ActiveGestures.Add(interactionObj, gestureAnalizer);
                 return true;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         private void OnProcessedPointerUpdate(PointerInput data)
         {
             //Just update data. everything should be inside subscribtions
-            foreach (var gesture in mActiveGestures.Values)
+            foreach (var gesture in m_ActiveGestures.Values)
             {
                 if (gesture.TryGetPointer(data.InputId, out var pointer))
                     pointer.UpdateDataAndRaise(data.Position);
@@ -203,7 +200,7 @@ namespace UnityTools
         private void OnProcessedPointerUp(PointerInput data)
         {
             var toRemoveList = new List<InteractionObject>();
-            foreach (var gestureKeyVal in mActiveGestures)
+            foreach (var gestureKeyVal in m_ActiveGestures)
             {
                 var gesture = gestureKeyVal.Value;
                 if (gesture.HasPointer(data.InputId))
@@ -214,7 +211,7 @@ namespace UnityTools
                 }
             }
             foreach (var gesture in toRemoveList)
-                mActiveGestures.Remove(gesture);
+                m_ActiveGestures.Remove(gesture);
         }
 
         /// <summary>
@@ -243,7 +240,7 @@ namespace UnityTools
 
         private void Update()
         {
-            foreach (var gesture in mActiveGestures)
+            foreach (var gesture in m_ActiveGestures)
                 gesture.Value.UpdateAllPointers();
         }
     }
