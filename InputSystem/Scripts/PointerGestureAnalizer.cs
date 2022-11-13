@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace ViJTools
+namespace UnityTools
 {
     public class PointerGestureAnalizer
     {

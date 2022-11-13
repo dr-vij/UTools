@@ -6,10 +6,10 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.Utilities;
-using ViJTools;
+using UnityTools;
 
 
-namespace ViJTools
+namespace UnityTools
 {
     public static class Helpers
     {

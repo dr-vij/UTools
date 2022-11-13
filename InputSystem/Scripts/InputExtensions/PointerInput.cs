@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ViJTools
+namespace UnityTools
 {
     /// <summary>
     /// Simple object to contain information for drag inputs.

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-namespace ViJTools
+namespace UnityTools
 {
     public class TextDebugger : SingletonMonobehaviour<TextDebugger>
     {

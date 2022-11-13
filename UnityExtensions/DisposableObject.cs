@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ViJTools
+namespace UnityTools
 {
     public class DisposableObject : IDisposableObject
     {

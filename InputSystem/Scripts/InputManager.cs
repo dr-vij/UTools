@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-namespace ViJTools
+namespace UnityTools
 {
     public class InputManager : SingletonMonobehaviour<InputManager>
     {
