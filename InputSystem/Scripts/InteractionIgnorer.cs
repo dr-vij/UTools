@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityTools
+namespace UTools.Input
 {
     /// <summary>
     /// This object is used to remove object from interaction hierarchy

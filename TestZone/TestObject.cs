@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityTools;
+using UTools.Input;
 
 [RequireComponent(typeof(InteractionObject))]
 public class TestObject : MonoBehaviour

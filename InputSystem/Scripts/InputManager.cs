@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-namespace UnityTools
+namespace UTools.Input
 {
     public class InputManager : SingletonMonobehaviour<InputManager>
     {

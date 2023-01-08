@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace UnityTools
+namespace UTools.Input
 {
     /// <summary>
     /// Interaction object. it is used for all interaction subscriptions

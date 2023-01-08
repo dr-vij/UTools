@@ -6,10 +6,10 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.Utilities;
-using UnityTools;
+using UTools;
 
 
-namespace UnityTools
+namespace UTools.Input
 {
     public static class Helpers
     {

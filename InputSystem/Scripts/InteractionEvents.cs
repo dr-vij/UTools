@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityTools
+namespace UTools.Input
 {
     /// <summary>
     /// The basic interaction event. Maybe it should be generic?

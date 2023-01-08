@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-namespace UnityTools
+namespace UTools
 {
     public class DisposableAction : DisposableObject
     {

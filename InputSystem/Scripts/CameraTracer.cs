@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace UnityTools
+namespace UTools.Input
 {
     public class LayerSettingsContainer
     {
