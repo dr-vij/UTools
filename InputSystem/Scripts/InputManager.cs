@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace UTools.Input
 {
-    public class InputManager : SingletonMonobehaviour<InputManager>
+    public class InputManager : SingletonMonoBehaviour<InputManager>
     {
         /// <summary>
         /// This parameters determines how far should drag perform to start drag. If distance is less, press will be performed

@@ -1,28 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace UTools
 {
-    public class SingletonMonobehaviour<T> : MonoBehaviour where T : MonoBehaviour
+    public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
     {
-        private static T mInstance;
+        private static T m_Instance;
 
         public static T Instance
         {
             get
             {
-                if (mInstance == null)
+                if (m_Instance == null)
                 {
                     var instances = FindObjectsOfType<T>();
                     if (instances.Length == 0)
-                        Debug.LogError("Singltone object was not found");
+                        Debug.LogError("Singleton object was not found");
                     else if (instances.Length > 1)
                         Debug.LogError("More then 1 singleton object was found");
                     else
-                        mInstance = instances[0];
+                        m_Instance = instances[0];
                 }
-                return mInstance;
+                return m_Instance;
             }
         }
     }
