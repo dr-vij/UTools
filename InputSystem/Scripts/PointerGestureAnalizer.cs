@@ -161,7 +161,7 @@ namespace UTools.Input
             else if (mTwoPointerDragStarted)
             {
                 //Two pointers drag end
-                (var firstPointer, var secondPointer) = GetTwoPointers();
+                var (firstPointer, secondPointer) = GetTwoPointers();
                 var twoPointersDragEndArgs = new TwoPointersDragInteractionEventArgs(firstPointer.CurrentPosition, firstPointer.PrevPosition, secondPointer.CurrentPosition, secondPointer.PrevPosition, InteractionCamera);
                 InteractionObject.RunEvent(InteractionEvents.TwoPointersDragEndEvent, twoPointersDragEndArgs);
                 mTwoPointerDragStarted = false;
