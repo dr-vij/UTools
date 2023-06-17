@@ -12,7 +12,7 @@ namespace UTools.Input
         public IEnumerable<IGestureAnalyzer> AllGestures => m_AllGestures.Values;
 
         public IEnumerable<IPointerGestureAnalyzer> PointerGestureAnalyzers => m_PointerGestureAnalyzers.Values;
-        
+
         public IEnumerable<IMouseGestureAnalyzer> MouseGestureAnalyzers => m_MouseGestureAnalyzers.Values;
 
         public bool HasGestures => m_AllGestures.Count > 0;
@@ -29,7 +29,7 @@ namespace UTools.Input
         {
             if (gestureAnalyzer is IPointerGestureAnalyzer pointerGestureAnalyzer)
                 m_PointerGestureAnalyzers.Add(gestureAnalyzer.InteractionObjectBase, pointerGestureAnalyzer);
-            else if (gestureAnalyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
+            if (gestureAnalyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
                 m_MouseGestureAnalyzers.Add(gestureAnalyzer.InteractionObjectBase, mouseGestureAnalyzer);
 
             m_AllGestures.Add(gestureAnalyzer.InteractionObjectBase, gestureAnalyzer);
@@ -37,9 +37,9 @@ namespace UTools.Input
 
         public void RemoveGesture(IGestureAnalyzer gestureAnalyzer)
         {
-            if (gestureAnalyzer is IPointerGestureAnalyzer pointerGestureAnalyzer)
+            if (gestureAnalyzer is IPointerGestureAnalyzer)
                 m_PointerGestureAnalyzers.Remove(gestureAnalyzer.InteractionObjectBase);
-            else if (gestureAnalyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
+            if (gestureAnalyzer is IMouseGestureAnalyzer)
                 m_MouseGestureAnalyzers.Remove(gestureAnalyzer.InteractionObjectBase);
             m_AllGestures.Remove(gestureAnalyzer.InteractionObjectBase);
         }

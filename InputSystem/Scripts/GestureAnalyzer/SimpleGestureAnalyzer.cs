@@ -6,35 +6,6 @@ using UnityEngine;
 
 namespace UTools.Input
 {
-    public interface IGestureAnalyzer
-    {
-        public bool IsSoloGesture { get; }
-        public bool CanBeRemoved { get; }
-        public InteractionObjectBase InteractionObjectBase { get; }
-        public Camera InteractionCamera { get; }
-        public int GestureId { get; }
-        public void UpdateAnalyzer();
-    }
-
-    public interface IPointerGestureAnalyzer : IGestureAnalyzer
-    {
-        public int PointersCount { get; }
-        IEnumerable<InteractionPointer> Pointers { get; }
-
-        public bool HasPointer(int pointerId);
-        public bool TryGetPointer(int pointerId, out InteractionPointer pointer);
-
-        public void CreatePointer(int pointerId, Vector2 position);
-        public void RemovePointer(int pointerId, Vector2 position);
-    }
-
-    public interface IMouseGestureAnalyzer : IGestureAnalyzer
-    {
-        public void UpdateMousePosition(Vector2 position);
-        public void MouseButtonDown(int button);
-        public void MouseButtonUp(int button);
-    }
-
     public class SimpleGestureAnalyzer : IPointerGestureAnalyzer, IMouseGestureAnalyzer
     {
         private static int m_IdCounter = -1;
@@ -45,7 +16,7 @@ namespace UTools.Input
         private bool m_TwoPointerDragStarted;
 
         private readonly Dictionary<int, InteractionPointer> m_Pointers = new();
-        
+
         //Mouse data
         private Vector2 m_MousePosition;
         private InteractionPointer m_MousePointer;
@@ -72,7 +43,7 @@ namespace UTools.Input
             GestureId = ++m_IdCounter;
         }
 
-        public bool CanBeRemoved => PointersCount == 0;
+        public bool CanBeRemoved => PointersCount == 0 && m_PressedMouseButton == int.MaxValue;
 
         #region Pointer Logic
 
@@ -254,6 +225,8 @@ namespace UTools.Input
         {
             if (m_PressedMouseButton == int.MaxValue)
             {
+                // Debug.Log($"MouseButtonDown {button}");
+
                 m_PressedMouseButton = button;
                 m_MousePointer = new InteractionPointer(button, m_MousePosition);
                 m_MousePointer.OnPointerUpdateEvent += OnMousePositionChanged;
@@ -279,10 +252,12 @@ namespace UTools.Input
         {
             if (m_PressedMouseButton == button)
             {
+                // Debug.Log($"MouseButtonUp {button}");
+
                 if (m_MouseDragStarted)
                 {
-                    var mouseDragEndArgs = new PointerDragInteractionEventArgs(m_MousePointer.CurrentPosition, m_MousePointer.TrackStartPosition, InteractionCamera);
-                    InteractionObjectBase.RunEvent(PointerInteractionEvents.PointerDragEndEvent, mouseDragEndArgs);
+                    var mouseDragEndArgs = new MouseDragInteractionEventArgs(m_MousePointer.CurrentPosition, m_MousePointer.TrackStartPosition, button, InteractionCamera);
+                    InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragEndEvent, mouseDragEndArgs);
                     switch (m_PressedMouseButton)
                     {
                         case Helpers.LeftMouseInputId:
@@ -338,6 +313,7 @@ namespace UTools.Input
 
         private void OnMousePositionChanged(InteractionPointer mousePointer)
         {
+            // Debug.Log("Mouse position changed");
             int triggerDistance = InputManager.Instance.DragOrPressTriggerDistance;
             if (m_MouseDragStarted)
             {
@@ -355,15 +331,16 @@ namespace UTools.Input
                     case Helpers.RightMouseInputId:
                         InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightDragEvent, dragArgs);
                         break;
-                }   
+                }
             }
             else if (Vector2.Distance(mousePointer.CurrentPosition, mousePointer.TrackStartPosition) > triggerDistance)
             {
                 //pointer drag detection here
                 m_MouseDragStarted = true;
-                var dragStartArgs = new MouseDragInteractionEventArgs(mousePointer.CurrentPosition, mousePointer.PreviousPosition, m_PressedMouseButton, InteractionCamera);
+                var dragStartArgs =
+                    new MouseDragInteractionEventArgs(mousePointer.CurrentPosition, mousePointer.PreviousPosition, m_PressedMouseButton, InteractionCamera);
                 InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragStartEvent, dragStartArgs);
-                
+
                 switch (m_PressedMouseButton)
                 {
                     case Helpers.LeftMouseInputId:

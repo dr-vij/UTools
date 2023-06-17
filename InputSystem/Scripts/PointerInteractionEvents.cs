@@ -132,8 +132,14 @@ namespace UTools.Input
         /// </summary>
         public static readonly InteractionEvent MouseMiddleDragEvent = new();
 
+        /// <summary>
+        /// Raised when user starts dragging object with middle mouse button
+        /// </summary>
         public static readonly InteractionEvent MouseMiddleDragStartEvent = new();
 
+        /// <summary>
+        /// Raised when user stops dragging object with middle mouse button
+        /// </summary>
         public static readonly InteractionEvent MouseMiddleDragEndEvent = new();
 
         #endregion

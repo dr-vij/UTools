@@ -14,6 +14,8 @@ namespace UTools.Input
         /// </summary>
         [SerializeField] private int m_DragOrPressTriggerDistance;
 
+        [SerializeField] private bool m_UpdateCausesGestureUpdates = false;
+
         private InputActions m_Actions;
         private readonly List<Camera> m_Cameras = new();
         private readonly CameraTracer m_CameraTracer = new();
@@ -120,10 +122,12 @@ namespace UTools.Input
         {
             if (!CanBeHandled(context))
                 return;
-            
+
+            // Debug.Log($"Mouse down {buttonIndex}");
+
             m_PressedButtons.Add(buttonIndex);
             m_ActiveDevice = context.control.device;
-            
+
             if (TryGetOrCreateGestureAtPosition(m_MousePosition, out var analyzer) && analyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
                 mouseGestureAnalyzer.MouseButtonDown(buttonIndex);
         }
@@ -132,13 +136,17 @@ namespace UTools.Input
         {
             if (!CanBeHandled(context))
                 return;
-            
+
+            // Debug.Log($"Mouse up {buttonIndex}");
+
             m_PressedButtons.Remove(buttonIndex);
             if (m_PressedButtons.Count == 0)
                 m_ActiveDevice = null;
-            
-            if (TryGetOrCreateGestureAtPosition(m_MousePosition, out var analyzer) && analyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
-                mouseGestureAnalyzer.MouseButtonUp(buttonIndex);
+
+            foreach (var mouseAnalyzer in m_GesturesContainer.MouseGestureAnalyzers)
+                mouseAnalyzer.MouseButtonUp(buttonIndex);
+
+            m_GesturesContainer.RemoveUnusedGestures();
         }
 
         #endregion
@@ -329,11 +337,14 @@ namespace UTools.Input
         }
 
         #endregion
-
+        
         private void Update()
         {
-            foreach (var gesture in m_GesturesContainer.AllGestures)
-                gesture.UpdateAnalyzer();
+            if (m_UpdateCausesGestureUpdates)
+            {
+                foreach (var gesture in m_GesturesContainer.AllGestures)
+                    gesture.UpdateAnalyzer();
+            }
         }
     }
 }
