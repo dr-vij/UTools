@@ -3,70 +3,71 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.Serialization;
 using UTools.Input;
 
 public class InputTest : MonoBehaviour
 {
-    private IDisposable mDragSubscribtion;
-    private InteractionObject mCameraInteractionObject;
-    private bool mIgnoreHandled = false;
+    private IDisposable m_DragSubscription;
+    private InteractionObjectBase m_CameraInteractionObjectBase;
+    private bool m_IgnoreHandled;
 
-    [SerializeField] private Transform mCanvasRoot = default;
-    [SerializeField] private Transform mPointerPreviewPrefab = default;
+    [SerializeField] private Transform m_CanvasRoot;
+    [SerializeField] private Transform m_PointerPreviewPrefab;
 
-    private List<Transform> mGesturePointers = new List<Transform>();
+    private List<Transform> m_GesturePointers = new();
 
     private void Awake()
     {
         InputManager.Instance.RegisterCamera(Camera.main);
         InputManager.Instance.CameraTracer.LayerSettings.SetLayers("Default");
-        mCameraInteractionObject = Camera.main.GetComponent<InteractionObject>();
+        m_CameraInteractionObjectBase = Camera.main.GetComponent<InteractionObjectBase>();
 
-        mCameraInteractionObject.SubscribePointerPressEvent(OnPress);
+        m_CameraInteractionObjectBase.SubscribePointerPressEvent(OnPress);
         Resubscribe();
     }
 
     private void Resubscribe()
     {
-        if (mDragSubscribtion != null)
-            mDragSubscribtion.Dispose();
+        if (m_DragSubscription != null)
+            m_DragSubscription.Dispose();
 
-        mDragSubscribtion = mCameraInteractionObject.SubscribePointerDragEvent(OnDragStart, OnDrag, OnDragEnd, true, mIgnoreHandled);
+        m_DragSubscription = m_CameraInteractionObjectBase.SubscribePointerDragEvent(OnDragStart, OnDrag, OnDragEnd, true, m_IgnoreHandled);
     }
 
     private void Update()
     {
-        var gestures = InputManager.Instance.ActiveGestures;
-        var pointersCount = gestures.Sum(c => c.PointersCount);
-
-        while (mGesturePointers.Count > pointersCount)
-        {
-            var pointerPreview = mGesturePointers[mGesturePointers.Count - 1];
-            Destroy(pointerPreview.gameObject);
-            mGesturePointers.RemoveAt(mGesturePointers.Count - 1);
-        }
-
-        while(mGesturePointers.Count < pointersCount)
-        {
-            mGesturePointers.Add(Instantiate(mPointerPreviewPrefab, mCanvasRoot));
-        }
-
-        var counter = 0;
-        foreach (var gesture in gestures)
-        {
-            var pointers = gesture.Pointers;
-
-            foreach (var pointer in pointers)
-            {
-                mGesturePointers[counter++].position = pointer.CurrentPosition;
-            }
-        }
+        // var gestures = InputManager.Instance.ActiveGestures;
+        // var pointerGestureAnalyzers = gestures as PointerGestureAnalyzer[] ?? gestures.ToArray();
+        // var pointersCount = pointerGestureAnalyzers.Sum(c => c.PointersCount);
+        //
+        // while (m_GesturePointers.Count > pointersCount)
+        // {
+        //     var pointerPreview = m_GesturePointers[^1];
+        //     Destroy(pointerPreview.gameObject);
+        //     m_GesturePointers.RemoveAt(m_GesturePointers.Count - 1);
+        // }
+        //
+        // while(m_GesturePointers.Count < pointersCount)
+        // {
+        //     m_GesturePointers.Add(Instantiate(m_PointerPreviewPrefab, m_CanvasRoot));
+        // }
+        //
+        // var counter = 0;
+        // foreach (var gesture in pointerGestureAnalyzers)
+        // {
+        //     var pointers = gesture.Pointers;
+        //
+        //     foreach (var pointer in pointers)
+        //     {
+        //         m_GesturePointers[counter++].position = pointer.CurrentPosition;
+        //     }
+        // }
     }
 
     private void OnPress(object sender, PointerInteractionEventArgs args)
     {
-        mIgnoreHandled = !mIgnoreHandled;
+        m_IgnoreHandled = !m_IgnoreHandled;
         Resubscribe();
     }
 

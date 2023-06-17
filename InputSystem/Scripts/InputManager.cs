@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace UTools.Input
@@ -13,33 +12,32 @@ namespace UTools.Input
         /// <summary>
         /// This parameters determines how far should drag perform to start drag. If distance is less, press will be performed
         /// </summary>
-        [SerializeField] private int m_DragOrPressTriggerDistance = 0;
+        [SerializeField] private int m_DragOrPressTriggerDistance;
 
         private InputActions m_Actions;
-        private List<Camera> m_Cameras = new List<Camera>();
-        private CameraTracer m_CameraTracer = new CameraTracer();
-
+        private readonly List<Camera> m_Cameras = new();
+        private readonly CameraTracer m_CameraTracer = new();
+        private readonly HashSet<int> m_ActiveTouches = new();
         private InputDevice m_ActiveDevice;
-        private HashSet<int> m_ActiveTouches = new HashSet<int>();
         private bool m_IsMouseOrPenInputStarted;
-        private Dictionary<InteractionObject, PointerGestureAnalizer> m_ActiveGestures = new Dictionary<InteractionObject, PointerGestureAnalizer>();
+        private readonly GesturesContainer m_GesturesContainer = new();
 
         public CameraTracer CameraTracer => m_CameraTracer;
 
         public int DragOrPressTriggerDistance => m_DragOrPressTriggerDistance;
-
-        public IEnumerable<PointerGestureAnalizer> ActiveGestures => m_ActiveGestures.Values;
-
-        public int ActiveGesturesCount => m_ActiveGestures.Count;
 
         public void RegisterCamera(Camera cam)
         {
             if (!m_Cameras.Contains(cam))
             {
                 m_Cameras.Add(cam);
-                if (!cam.TryGetComponent<InteractionObject>(out var interactionObject))
-                    cam.gameObject.AddComponent<InteractionObject>();
+                if (!cam.TryGetComponent<InteractionObjectBase>(out _))
+                    Debug.LogError("No interaction object for the camera");
                 m_Cameras.Sort((cam1, cam2) => cam1.depth.CompareTo(cam2.depth));
+            }
+            else
+            {
+                Debug.LogWarning("Camera already registered");
             }
         }
 
@@ -51,8 +49,19 @@ namespace UTools.Input
             m_Actions = new InputActions();
             m_Actions.GestureActions.Enable();
 
+            //Unified pointer gesture events. mouse + pen + touch
             m_Actions.GestureActions.Pointer.performed += OnPointerEvent;
             m_Actions.GestureActions.Pointer.canceled += OnPointerEvent;
+
+            //Mouse gesture events
+            m_Actions.GestureActions.MouseLeft.started += OnLeftMouseButtonDownEvent;
+            m_Actions.GestureActions.MouseLeft.canceled += OnLeftMouseButtonUpEvent;
+            m_Actions.GestureActions.MouseRight.started += OnRightMouseButtonDownEvent;
+            m_Actions.GestureActions.MouseRight.canceled += OnRightMouseButtonUpEvent;
+            m_Actions.GestureActions.MouseMiddle.started += OnMiddleMouseButtonDownEvent;
+            m_Actions.GestureActions.MouseMiddle.canceled += OnMiddleMouseButtonUpEvent;
+
+            m_Actions.GestureActions.MousePosition.performed += OnMousePositionEvent;
         }
 
         /// <summary>
@@ -62,9 +71,79 @@ namespace UTools.Input
         {
             m_Actions.Disable();
 
+            //Unified pointer gesture events. mouse + pen + touch
             m_Actions.GestureActions.Pointer.performed -= OnPointerEvent;
             m_Actions.GestureActions.Pointer.canceled -= OnPointerEvent;
+
+            //Mouse gesture events
+            m_Actions.GestureActions.MouseLeft.started -= OnLeftMouseButtonDownEvent;
+            m_Actions.GestureActions.MouseLeft.canceled -= OnLeftMouseButtonUpEvent;
+            m_Actions.GestureActions.MouseRight.started -= OnRightMouseButtonDownEvent;
+            m_Actions.GestureActions.MouseRight.canceled -= OnRightMouseButtonUpEvent;
+            m_Actions.GestureActions.MouseMiddle.started -= OnMiddleMouseButtonDownEvent;
+            m_Actions.GestureActions.MouseMiddle.canceled -= OnMiddleMouseButtonUpEvent;
+
+            m_Actions.GestureActions.MousePosition.performed -= OnMousePositionEvent;
         }
+
+        #region Mouse Gestures
+
+        private void OnLeftMouseButtonDownEvent(InputAction.CallbackContext context) =>
+            OnMouseDownPerformed(context, Helpers.LeftMouseInputId);
+
+        private void OnLeftMouseButtonUpEvent(InputAction.CallbackContext context) =>
+            OnMouseUpPerformed(context, Helpers.LeftMouseInputId);
+
+        private void OnRightMouseButtonDownEvent(InputAction.CallbackContext context) =>
+            OnMouseDownPerformed(context, Helpers.RightMouseInputId);
+
+        private void OnRightMouseButtonUpEvent(InputAction.CallbackContext context) =>
+            OnMouseUpPerformed(context, Helpers.RightMouseInputId);
+
+        private void OnMiddleMouseButtonDownEvent(InputAction.CallbackContext context) =>
+            OnMouseDownPerformed(context, Helpers.MiddleMouseInputId);
+
+        private void OnMiddleMouseButtonUpEvent(InputAction.CallbackContext context) =>
+            OnMouseUpPerformed(context, Helpers.MiddleMouseInputId);
+
+        private Vector2 m_MousePosition;
+        private readonly HashSet<int> m_PressedButtons = new();
+
+        private void OnMousePositionEvent(InputAction.CallbackContext context)
+        {
+            m_MousePosition = context.ReadValue<Vector2>();
+            foreach (var mouseAnalyzer in m_GesturesContainer.MouseGestureAnalyzers)
+                mouseAnalyzer.UpdateMousePosition(m_MousePosition);
+        }
+
+        private void OnMouseDownPerformed(InputAction.CallbackContext context, int buttonIndex)
+        {
+            if (!CanBeHandled(context))
+                return;
+            
+            m_PressedButtons.Add(buttonIndex);
+            m_ActiveDevice = context.control.device;
+            
+            if (TryGetOrCreateGestureAtPosition(m_MousePosition, out var analyzer) && analyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
+                mouseGestureAnalyzer.MouseButtonDown(buttonIndex);
+        }
+
+        private void OnMouseUpPerformed(InputAction.CallbackContext context, int buttonIndex)
+        {
+            if (!CanBeHandled(context))
+                return;
+            
+            m_PressedButtons.Remove(buttonIndex);
+            if (m_PressedButtons.Count == 0)
+                m_ActiveDevice = null;
+            
+            if (TryGetOrCreateGestureAtPosition(m_MousePosition, out var analyzer) && analyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
+                mouseGestureAnalyzer.MouseButtonUp(buttonIndex);
+        }
+
+        #endregion
+
+        #region Pointer Gestures
 
         private void OnPointerEvent(InputAction.CallbackContext context)
         {
@@ -151,69 +230,78 @@ namespace UTools.Input
         /// <param name="data"></param>
         private void OnProcessedPointerDown(PointerInput data)
         {
-            if (!m_CameraTracer.IsOverUI(data.Position))
-            {
-                var goodCameras = GetTracebleCameras(data.Position);
-                if (goodCameras.Count != 0)
-                {
-                    var camera = goodCameras[0];
-                    var cameraInteractionObj = camera.GetComponent<InteractionObject>();
-
-                    if (m_CameraTracer.TryTraceInteractionObject(camera, data.Position, out var interactionObject) && TryGetOrCreateGestureAnalizer(interactionObject, camera, out var gesture))
-                        gesture.CreatePointer(data.InputId, data.Position);
-                    else if (TryGetOrCreateGestureAnalizer(cameraInteractionObj, camera, out gesture))
-                        gesture.CreatePointer(data.InputId, data.Position);
-                }
-            }
+            if (TryGetOrCreateGestureAtPosition(data.Position, out var analyzer) && analyzer is IPointerGestureAnalyzer pointerGestureAnalyzer)
+                pointerGestureAnalyzer.CreatePointer(data.InputId, data.Position);
         }
 
-        private bool TryGetOrCreateGestureAnalizer(InteractionObject interactionObj, Camera camera, out PointerGestureAnalizer gestureAnalizer)
+        private bool TryGetOrCreateGestureAtPosition(Vector2 position, out IGestureAnalyzer analyzer)
         {
-            gestureAnalizer = null;
-            if (interactionObj == null)
-                return false;
-
-            if (!m_ActiveGestures.TryGetValue(interactionObj, out gestureAnalizer))
+            if (!m_CameraTracer.IsOverUI(position))
             {
-                //check if we already have solo interaction and prevent creating new gesture analizers
-                if (m_ActiveGestures.Any(c => c.Key.IsSoloInteraction))
-                    return false;
-                //check if this object is solo interaction and prevent its gesture analizer creation if another gestures exist
-                if (interactionObj.IsSoloInteraction && m_ActiveGestures.Count != 0)
-                    return false;
-
-                gestureAnalizer = interactionObj.CreateAnalizer(camera);
-                m_ActiveGestures.Add(interactionObj, gestureAnalizer);
-                return true;
+                var goodCameras = GetTraceableCameras(position);
+                if (goodCameras.Count != 0)
+                {
+                    var cam = goodCameras[0];
+                    var cameraInteractionObj = cam.GetComponent<InteractionObjectBase>();
+                    var interactionObjectFound = m_CameraTracer.TryTraceInteractionObject(cam, position, out var interactionObject);
+                    if (interactionObjectFound && TryGetOrCreateGestureAnalyzer(interactionObject, cam, out analyzer))
+                        return true;
+                    if (TryGetOrCreateGestureAnalyzer(cameraInteractionObj, cam, out analyzer))
+                        return true;
+                }
             }
-            return true;
+
+            analyzer = null;
+            return false;
         }
 
         private void OnProcessedPointerUpdate(PointerInput data)
         {
-            //Just update data. everything should be inside subscribtions
-            foreach (var gesture in m_ActiveGestures.Values)
+            //Just update data. everything should be inside subscriptions
+            foreach (var gesture in m_GesturesContainer.PointerGestureAnalyzers)
             {
                 if (gesture.TryGetPointer(data.InputId, out var pointer))
-                    pointer.UpdateDataAndRaise(data.Position);
+                    pointer.UpdatePositionAndRaise(data.Position);
             }
         }
 
         private void OnProcessedPointerUp(PointerInput data)
         {
-            var toRemoveList = new List<InteractionObject>();
-            foreach (var gestureKeyVal in m_ActiveGestures)
+            foreach (var gesture in m_GesturesContainer.PointerGestureAnalyzers)
             {
-                var gesture = gestureKeyVal.Value;
                 if (gesture.HasPointer(data.InputId))
-                {
                     gesture.RemovePointer(data.InputId, data.Position);
-                    if (gesture.PointersCount == 0)
-                        toRemoveList.Add(gestureKeyVal.Key);
-                }
             }
-            foreach (var gesture in toRemoveList)
-                m_ActiveGestures.Remove(gesture);
+
+            m_GesturesContainer.RemoveUnusedGestures();
+        }
+
+        #endregion
+
+        #region Utils
+
+        private bool TryGetOrCreateGestureAnalyzer(InteractionObjectBase interactionObj, Camera cam, out IGestureAnalyzer gestureAnalyzer)
+        {
+            gestureAnalyzer = null;
+            if (interactionObj == null)
+                return false;
+
+            if (!m_GesturesContainer.TryGetGestureAnalyzer(interactionObj, out gestureAnalyzer))
+            {
+                //check if we already have solo interaction and prevent creating new gesture analyzers
+                if (m_GesturesContainer.AllGestures.Any(gestureAnalyzer => gestureAnalyzer.IsSoloGesture))
+                    return false;
+                //check if this object is solo interaction and prevent its gesture analyzer creation if another gestures exist
+                var analyzer = interactionObj.CreateAnalyzer(cam);
+                if (analyzer.IsSoloGesture && m_GesturesContainer.HasGestures)
+                    return false;
+
+                gestureAnalyzer = analyzer;
+                m_GesturesContainer.AddGesture(gestureAnalyzer);
+                return true;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -226,24 +314,26 @@ namespace UTools.Input
             return m_ActiveDevice == null || m_ActiveDevice.GetType() == context.control.device.GetType();
         }
 
-        private List<Camera> GetTracebleCameras(Vector2 position)
+        private List<Camera> GetTraceableCameras(Vector2 position)
         {
             if (m_Cameras.Count == 0)
-                Debug.LogWarning("No traceble cameras. Did you forget to add one?");
+                Debug.LogWarning("No traceable cameras. Did you forget to add one?");
 
-            return m_Cameras.Where(camera => m_CameraTracer.CanBeTraced(camera, position)).ToList();
+            return m_Cameras.Where(cam => m_CameraTracer.CanBeTraced(cam, position)).ToList();
         }
 
         public static void RunEventOnCamera(Camera cam, InteractionEvent evt, InteractionEventArgs args)
         {
-            if (cam != null && cam.TryGetComponent<InteractionObject>(out var cameraInteractionObject))
+            if (cam != null && cam.TryGetComponent<InteractionObjectBase>(out var cameraInteractionObject))
                 cameraInteractionObject.RunEvent(evt, args);
         }
 
+        #endregion
+
         private void Update()
         {
-            foreach (var gesture in m_ActiveGestures)
-                gesture.Value.UpdateAllPointers();
+            foreach (var gesture in m_GesturesContainer.AllGestures)
+                gesture.UpdateAnalyzer();
         }
     }
 }
