@@ -10,7 +10,7 @@ namespace UTools.Input
     /// </summary>
     public abstract class InteractionObjectBase : DisposableMonobehaviour
     {
-        private readonly Dictionary<InteractionEvent, List<InteractionSubscribtion>> m_AllSubscriptions = new ();
+        private readonly Dictionary<InteractionEvent, List<InteractionSubscribtion>> m_AllSubscriptions = new();
 
         public abstract IGestureAnalyzer CreateAnalyzer(Camera cam);
 
@@ -19,7 +19,8 @@ namespace UTools.Input
             return m_AllSubscriptions.TryGetValue(evt, out var subscriptions) && subscriptions.Count != 0;
         }
 
-        public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false) where TEventArgs : InteractionEventArgs
+        public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false)
+            where TEventArgs : InteractionEventArgs
         {
             handler ??= (_, _) => { };
             AddSubscription(evt, handler, handleEvent, ignoreHandled);
@@ -37,14 +38,18 @@ namespace UTools.Input
             {
                 foreach (var handler in handlers)
                 {
-                    var isHandled = args.IsHandled;
-                    if (!isHandled || handler.IgnoreHandled)
+                    if (!args.IsHandled || handler.IgnoreHandled)
                     {
                         if (handler.HandleEvents)
                             args.Handle(this);
                         handler.Handler.DynamicInvoke(this, args);
                     }
                 }
+            }
+
+            if (args.InteractionCamera.TryGetComponent<InteractionObjectBase>(out var cameraInteractionObject) && cameraInteractionObject != this)
+            {
+                cameraInteractionObject.RunEvent(evt, args);
             }
         }
 
@@ -60,13 +65,15 @@ namespace UTools.Input
             }
         }
 
-        private void AddSubscription<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false) where TEventArgs : InteractionEventArgs
+        private void AddSubscription<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false)
+            where TEventArgs : InteractionEventArgs
         {
             if (!m_AllSubscriptions.TryGetValue(evt, out var subscriptions))
             {
                 subscriptions = new List<InteractionSubscribtion>();
                 m_AllSubscriptions.Add(evt, subscriptions);
             }
+
             subscriptions.Add(new InteractionSubscribtion(handler, handleEvent, ignoreHandled));
         }
 

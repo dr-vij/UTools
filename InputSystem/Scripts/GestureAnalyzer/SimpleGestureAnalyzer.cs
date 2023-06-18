@@ -319,17 +319,17 @@ namespace UTools.Input
             {
                 //Pointer drag here
                 var dragArgs = new MouseDragInteractionEventArgs(mousePointer.CurrentPosition, mousePointer.PreviousPosition, m_PressedMouseButton, InteractionCamera);
-                InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragEvent, dragArgs);
+                InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragPerformEvent, dragArgs);
                 switch (m_PressedMouseButton)
                 {
                     case Helpers.LeftMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftDragEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftDragPerformEvent, dragArgs);
                         break;
                     case Helpers.MiddleMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleDragEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleDragPerformEvent, dragArgs);
                         break;
                     case Helpers.RightMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightDragEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightDragPerformEvent, dragArgs);
                         break;
                 }
             }

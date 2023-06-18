@@ -40,7 +40,7 @@ namespace UTools.Input
         /// <summary>
         /// Raised when user moves mouse after dragging object
         /// </summary>
-        public static readonly InteractionEvent MouseDragEvent = new();
+        public static readonly InteractionEvent MouseDragPerformEvent = new();
 
         /// <summary>
         /// Raised when user starts dragging object
@@ -70,7 +70,7 @@ namespace UTools.Input
         /// <summary>
         /// Raised when user moves mouse after dragging object with left mouse button
         /// </summary>
-        public static readonly InteractionEvent MouseLeftDragEvent = new();
+        public static readonly InteractionEvent MouseLeftDragPerformEvent = new();
 
         /// <summary>
         /// Raised when user starts dragging object with left mouse button
@@ -100,7 +100,7 @@ namespace UTools.Input
         /// <summary>
         /// Raised when user moves mouse after dragging object with right mouse button
         /// </summary>
-        public static readonly InteractionEvent MouseRightDragEvent = new();
+        public static readonly InteractionEvent MouseRightDragPerformEvent = new();
 
         /// <summary>
         /// Raised when user starts dragging object with right mouse button
@@ -130,7 +130,7 @@ namespace UTools.Input
         /// <summary>
         /// Raised when user moves mouse after dragging object with middle mouse button
         /// </summary>
-        public static readonly InteractionEvent MouseMiddleDragEvent = new();
+        public static readonly InteractionEvent MouseMiddleDragPerformEvent = new();
 
         /// <summary>
         /// Raised when user starts dragging object with middle mouse button

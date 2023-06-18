@@ -225,7 +225,7 @@ namespace UTools.Input
         )
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseDragEvent, mouseDragHandler);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseDragPerformEvent, mouseDragHandler);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseDragEndEvent, mouseDragEndHandler);
             return new DisposableAction(() =>
             {
@@ -235,14 +235,14 @@ namespace UTools.Input
             });
         }
 
-        public static IDisposable SubscribeLeftMouseDragEven(this InteractionObjectBase interactionObjectBase,
+        public static IDisposable SubscribeLeftMouseDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
         )
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseLeftDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseLeftDragEvent, mouseDragHandler);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseLeftDragPerformEvent, mouseDragHandler);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseLeftDragEndEvent, mouseDragEndHandler);
             return new DisposableAction(() =>
             {
@@ -259,7 +259,7 @@ namespace UTools.Input
         )
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseRightDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseRightDragEvent, mouseDragHandler);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseRightDragPerformEvent, mouseDragHandler);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseRightDragEndEvent, mouseDragEndHandler);
             return new DisposableAction(() =>
             {
@@ -276,7 +276,7 @@ namespace UTools.Input
         )
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseMiddleDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseMiddleDragEvent, mouseDragHandler);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseMiddleDragPerformEvent, mouseDragHandler);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.MouseMiddleDragEndEvent, mouseDragEndHandler);
             return new DisposableAction(() =>
             {
