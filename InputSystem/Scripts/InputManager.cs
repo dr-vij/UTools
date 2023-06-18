@@ -28,6 +28,11 @@ namespace UTools.Input
 
         public int DragOrPressTriggerDistance => m_DragOrPressTriggerDistance;
 
+        public bool GetActualObjectForPointerEventArgs(PointerInteractionEventArgs args, out InteractionObjectBase interactionObject)
+        {
+            return m_CameraTracer.TryTraceInteractionObject(args.InteractionCamera, args.PointerPosition, out interactionObject);
+        }
+
         public void RegisterCamera(Camera cam)
         {
             if (!m_Cameras.Contains(cam))
