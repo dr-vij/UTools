@@ -232,17 +232,17 @@ namespace UTools.Input
                 m_MousePointer.OnPointerUpdateEvent += OnMousePositionChanged;
 
                 var mouseDownArgs = new MouseInteractionEventArgs(m_MousePosition, button, InteractionCamera);
-                InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseGrabEvent, mouseDownArgs);
+                InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseGrabEvent, mouseDownArgs);
                 switch (m_PressedMouseButton)
                 {
                     case Helpers.LeftMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftGrabEvent, mouseDownArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseLeftGrabEvent, mouseDownArgs);
                         break;
                     case Helpers.MiddleMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleGrabEvent, mouseDownArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseMiddleGrabEvent, mouseDownArgs);
                         break;
                     case Helpers.RightMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightGrabEvent, mouseDownArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseRightGrabEvent, mouseDownArgs);
                         break;
                 }
             }
@@ -257,50 +257,50 @@ namespace UTools.Input
                 if (m_MouseDragStarted)
                 {
                     var mouseDragEndArgs = new MouseDragInteractionEventArgs(m_MousePointer.CurrentPosition, m_MousePointer.TrackStartPosition, button, InteractionCamera);
-                    InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragEndEvent, mouseDragEndArgs);
+                    InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseDragEndEvent, mouseDragEndArgs);
                     switch (m_PressedMouseButton)
                     {
                         case Helpers.LeftMouseInputId:
-                            InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftDragEndEvent, mouseDragEndArgs);
+                            InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseLeftDragEndEvent, mouseDragEndArgs);
                             break;
                         case Helpers.MiddleMouseInputId:
-                            InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleDragEndEvent, mouseDragEndArgs);
+                            InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseMiddleDragEndEvent, mouseDragEndArgs);
                             break;
                         case Helpers.RightMouseInputId:
-                            InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightDragEndEvent, mouseDragEndArgs);
+                            InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseRightDragEndEvent, mouseDragEndArgs);
                             break;
                     }
                 }
                 else
                 {
                     var mousePressArgs = new MouseInteractionEventArgs(m_MousePointer.CurrentPosition, button, InteractionCamera);
-                    InteractionObjectBase.RunEvent(PointerInteractionEvents.MousePressEvent, mousePressArgs);
+                    InteractionObjectBase.RunEvent(MouseInteractionEvents.MousePressEvent, mousePressArgs);
                     switch (m_PressedMouseButton)
                     {
                         case Helpers.LeftMouseInputId:
-                            InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftPressEvent, mousePressArgs);
+                            InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseLeftPressEvent, mousePressArgs);
                             break;
                         case Helpers.MiddleMouseInputId:
-                            InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddlePressEvent, mousePressArgs);
+                            InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseMiddlePressEvent, mousePressArgs);
                             break;
                         case Helpers.RightMouseInputId:
-                            InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightPressEvent, mousePressArgs);
+                            InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseRightPressEvent, mousePressArgs);
                             break;
                     }
                 }
 
                 var mouseUpArgs = new MouseInteractionEventArgs(m_MousePosition, button, InteractionCamera);
-                InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseReleaseEvent, mouseUpArgs);
+                InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseReleaseEvent, mouseUpArgs);
                 switch (m_PressedMouseButton)
                 {
                     case Helpers.LeftMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftReleaseEvent, mouseUpArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseLeftReleaseEvent, mouseUpArgs);
                         break;
                     case Helpers.MiddleMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleReleaseEvent, mouseUpArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseMiddleReleaseEvent, mouseUpArgs);
                         break;
                     case Helpers.RightMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightReleaseEvent, mouseUpArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseRightReleaseEvent, mouseUpArgs);
                         break;
                 }
 
@@ -319,17 +319,17 @@ namespace UTools.Input
             {
                 //Pointer drag here
                 var dragArgs = new MouseDragInteractionEventArgs(mousePointer.CurrentPosition, mousePointer.PreviousPosition, m_PressedMouseButton, InteractionCamera);
-                InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragPerformEvent, dragArgs);
+                InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseDragPerformEvent, dragArgs);
                 switch (m_PressedMouseButton)
                 {
                     case Helpers.LeftMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftDragPerformEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseLeftDragPerformEvent, dragArgs);
                         break;
                     case Helpers.MiddleMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleDragPerformEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseMiddleDragPerformEvent, dragArgs);
                         break;
                     case Helpers.RightMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightDragPerformEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseRightDragPerformEvent, dragArgs);
                         break;
                 }
             }
@@ -339,18 +339,18 @@ namespace UTools.Input
                 m_MouseDragStarted = true;
                 var dragStartArgs =
                     new MouseDragInteractionEventArgs(mousePointer.CurrentPosition, mousePointer.PreviousPosition, m_PressedMouseButton, InteractionCamera);
-                InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseDragStartEvent, dragStartArgs);
+                InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseDragStartEvent, dragStartArgs);
 
                 switch (m_PressedMouseButton)
                 {
                     case Helpers.LeftMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseLeftDragStartEvent, dragStartArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseLeftDragStartEvent, dragStartArgs);
                         break;
                     case Helpers.MiddleMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseMiddleDragStartEvent, dragStartArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseMiddleDragStartEvent, dragStartArgs);
                         break;
                     case Helpers.RightMouseInputId:
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.MouseRightDragStartEvent, dragStartArgs);
+                        InteractionObjectBase.RunEvent(MouseInteractionEvents.MouseRightDragStartEvent, dragStartArgs);
                         break;
                 }
             }
