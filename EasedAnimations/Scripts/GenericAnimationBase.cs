@@ -7,18 +7,30 @@ using UnityEngine.Animations;
 using UnityEngine.Playables;
 using static Easings;
 
-public class GenericAnimationBase<T> : IDisposable
+public class IdContainer
 {
-    private static int m_IdCounter;
-    private int m_ID = 0;
+    protected static int m_IdCounter;
+    public int Id { get; protected set; }
+    
+    protected IdContainer()
+    {
+        Id = ++m_IdCounter;
+    }
+}
 
+/// <summary>
+/// The primary idea of this animation behaviour is that we never set the value directly, but instead we set the
+/// start and end values and the behaviour will interpolate between them.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class GenericAnimationBase<T> : IdContainer, IDisposable
+{
     private PlayableGraph m_PlayableGraph;
-    private ScriptPlayable<InterpolateBehaviour> m_InterpolatePlayable;
-    private InterpolateBehaviour m_PlayableBehaviour;
+    private readonly ScriptPlayable<InterpolateBehaviour> m_InterpolatePlayable;
+    private readonly InterpolateBehaviour m_PlayableBehaviour;
 
-    private Animator m_Animator;
-    private GameObject m_Go;
-    private Func<T, T, float, T> m_LerpFunction;
+    private readonly GameObject m_Go;
+    private readonly Func<T, T, float, T> m_LerpFunction;
 
     private T m_StartValue;
     private T m_EndValue;
@@ -68,6 +80,8 @@ public class GenericAnimationBase<T> : IDisposable
         set => m_PlayableBehaviour.EasingType = value;
     }
 
+    public bool IsPlaying => m_InterpolatePlayable.GetPlayState() == PlayState.Playing;
+
     public float Duration
     {
         get => (float)m_InterpolatePlayable.GetDuration();
@@ -88,6 +102,12 @@ public class GenericAnimationBase<T> : IDisposable
         }
     }
 
+    public float TimeLeft
+    {
+        get => Duration - Time;
+        set => Time = Duration - value;
+    }
+
     public float Time
     {
         get => (float)m_InterpolatePlayable.GetTime();
@@ -99,7 +119,7 @@ public class GenericAnimationBase<T> : IDisposable
                 m_InterpolatePlayable.Play();
 
             //set data
-            var clampedTime = math.clamp(value, 0, m_InterpolatePlayable.GetDuration()) ;
+            var clampedTime = math.clamp(value, 0, m_InterpolatePlayable.GetDuration());
             m_InterpolatePlayable.SetTime(clampedTime);
             m_PlayableGraph.Evaluate();
 
@@ -126,14 +146,20 @@ public class GenericAnimationBase<T> : IDisposable
         m_PlayableBehaviour.OnEasedProgressUpdateEvent += UpdateCurrentValue;
 
         //Connect animation to graph
-        m_ID = ++m_IdCounter;
-        m_Go = new GameObject($"Animator {m_ID}", typeof(Animator))
+        m_Go = new GameObject($"Animator {Id}", typeof(Animator))
         {
             hideFlags = HideFlags.HideInHierarchy
         };
-        m_Animator = m_Go.GetComponent<Animator>();
-        var playableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, $"FloatAnimation {m_ID}", m_Animator);
+        var animator = m_Go.GetComponent<Animator>();
+        var playableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, $"FloatAnimation {Id}", animator);
         playableOutput.SetSourcePlayable(m_InterpolatePlayable);
+    }
+
+    public void SetStartEnd(T start, T end)
+    {
+        m_StartValue = start;
+        m_EndValue = end;
+        UpdateCurrentValue(m_PlayableBehaviour.EasedProgress);
     }
 
     public void Stop() => m_InterpolatePlayable.Pause();
