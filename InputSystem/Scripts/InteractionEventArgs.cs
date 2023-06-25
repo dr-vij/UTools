@@ -55,6 +55,8 @@ namespace UTools.Input
     public class PointerDragInteractionEventArgs : PointerInteractionEventArgs
     {
         public Vector2 PointerPrevPosition { get; private set; }
+        
+        public Vector2 PointerDelta => PointerPosition - PointerPrevPosition;
 
         public PointerDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Camera camera) : base(position, camera) => PointerPrevPosition = prevPosition;
     }

@@ -24,7 +24,7 @@ namespace UTools.Input
         /// <summary>
         /// Raised when user drag
         /// </summary>
-        public static readonly InteractionEvent PointerDragEvent = new();
+        public static readonly InteractionEvent PointerDragPerformEvent = new();
 
         /// <summary>
         /// Raised when user stops drag (remove or add pointer)
@@ -39,7 +39,7 @@ namespace UTools.Input
         /// <summary>
         /// Raised when user drags with two pointers
         /// </summary>
-        public static readonly InteractionEvent TwoPointersDragEvent = new();
+        public static readonly InteractionEvent TwoPointersDragPerformEvent = new();
 
         /// <summary>
         /// Raised when user stops drag with two pointers (remove or add pointer)

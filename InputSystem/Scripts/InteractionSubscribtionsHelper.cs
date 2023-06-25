@@ -308,18 +308,18 @@ namespace UTools.Input
         /// </summary>
         /// <param name="interactionObjectBase"></param>
         /// <param name="pointerDragStartHandler"></param>
-        /// <param name="pointerDragHandler"></param>
+        /// <param name="pointerDragPerformHandler"></param>
         /// <param name="pointerDragEndHandler"></param>
         /// <param name="handleEvents"></param>
         /// <param name="ignoreHandled"></param>
         public static IDisposable SubscribePointerDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<PointerDragInteractionEventArgs> pointerDragStartHandler,
-            EventHandler<PointerDragInteractionEventArgs> pointerDragHandler,
+            EventHandler<PointerDragInteractionEventArgs> pointerDragPerformHandler,
             EventHandler<PointerDragInteractionEventArgs> pointerDragEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragStartEvent, pointerDragStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragEvent, pointerDragHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragPerformEvent, pointerDragPerformHandler, handleEvents, ignoreHandled);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragEndEvent, pointerDragEndHandler, handleEvents, ignoreHandled);
             return new DisposableAction(() =>
             {
@@ -334,19 +334,19 @@ namespace UTools.Input
         /// </summary>
         /// <param name="interactionObjectBase"></param>
         /// <param name="twoPointersDragStartHandler"></param>
-        /// <param name="twoPointersDragHandler"></param>
+        /// <param name="twoPointersDragPerformHandler"></param>
         /// <param name="twoPointersDragEndHandler"></param>
         /// <param name="handleEvents"></param>
         /// <param name="ignoreHandled"></param>
         /// <returns></returns>
         public static IDisposable SubscribeTwoPointersDragEnvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragStartHandler,
-            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragHandler,
+            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragPerformHandler,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragStartEvent, twoPointersDragStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragEvent, twoPointersDragHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragPerformEvent, twoPointersDragPerformHandler, handleEvents, ignoreHandled);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragEndEvent, twoPointersDragEndHandler, handleEvents, ignoreHandled);
             return new DisposableAction(() =>
             {

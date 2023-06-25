@@ -127,7 +127,7 @@ namespace UTools.Input
                     {
                         //Pointer drag here
                         var dragArgs = new PointerDragInteractionEventArgs(pointer.CurrentPosition, pointer.PreviousPosition, InteractionCamera);
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.PointerDragEvent, dragArgs);
+                        InteractionObjectBase.RunEvent(PointerInteractionEvents.PointerDragPerformEvent, dragArgs);
                     }
                     else if (Vector2.Distance(pointer.CurrentPosition, pointer.TrackStartPosition) > triggerDistance)
                     {
@@ -144,7 +144,7 @@ namespace UTools.Input
                     {
                         var args = new TwoPointersDragInteractionEventArgs(pointer1.CurrentPosition, pointer1.PreviousPosition, pointer2.CurrentPosition,
                             pointer2.PreviousPosition, InteractionCamera);
-                        InteractionObjectBase.RunEvent(PointerInteractionEvents.TwoPointersDragEvent, args);
+                        InteractionObjectBase.RunEvent(PointerInteractionEvents.TwoPointersDragPerformEvent, args);
                     }
                     else if (Vector2.Distance(pointer1.CurrentPosition, pointer1.TrackStartPosition) > triggerDistance ||
                              Vector2.Distance(pointer2.CurrentPosition, pointer2.TrackStartPosition) > triggerDistance)
