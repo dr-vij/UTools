@@ -132,9 +132,11 @@ namespace UTools.Input
 
             m_PressedButtons.Add(buttonIndex);
             m_ActiveDevice = context.control.device;
-
             if (TryGetOrCreateGestureAtPosition(m_MousePosition, out var analyzer) && analyzer is IMouseGestureAnalyzer mouseGestureAnalyzer)
+            {
+                mouseGestureAnalyzer.UpdateMousePosition(m_MousePosition);
                 mouseGestureAnalyzer.MouseButtonDown(buttonIndex);
+            }
         }
 
         private void OnMouseUpPerformed(InputAction.CallbackContext context, int buttonIndex)
@@ -247,6 +249,12 @@ namespace UTools.Input
                 pointerGestureAnalyzer.CreatePointer(data.InputId, data.Position);
         }
 
+        /// <summary>
+        /// Just creates a gesture analyzer for an object under given position
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="analyzer"></param>
+        /// <returns></returns>
         private bool TryGetOrCreateGestureAtPosition(Vector2 position, out IGestureAnalyzer analyzer)
         {
             if (!m_CameraTracer.IsOverUI(position))

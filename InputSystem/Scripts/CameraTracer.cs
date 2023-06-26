@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace UTools.Input
 {
@@ -14,6 +15,7 @@ namespace UTools.Input
         private RaycastHit[] m_Hits;
         private int m_CurrentHitCount;
         private int m_RaycastCapacity;
+        private List<RaycastResult> m_RaycastResults = new();
 
         public int RaycastCapacity
         {
@@ -66,9 +68,11 @@ namespace UTools.Input
         {
             var mask = LayerSettings.RaycastMask & ~Physics.IgnoreRaycastLayer;
             var eventData = new PointerEventData(EventSystem.current) { position = pos };
-            var results = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(eventData, results);
-            return results.Count != 0 && results.Any(c => (1 << c.gameObject.layer & mask) != 0 && c.module is GraphicRaycaster);
+            m_RaycastResults.Clear();
+            EventSystem.current.RaycastAll(eventData, m_RaycastResults);
+            var result = m_RaycastResults.Count != 0 && m_RaycastResults.Any(c => (1 << c.gameObject.layer & mask) != 0 && c.module is GraphicRaycaster or PanelRaycaster);
+            // Debug.Log( $"IsOverUI: {result}");
+            return result;
         }
 
         /// <summary>

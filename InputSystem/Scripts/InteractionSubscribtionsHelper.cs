@@ -252,7 +252,7 @@ namespace UTools.Input
             });
         }
         
-        public static IDisposable SubscribeRightMouseDragEven(this InteractionObjectBase interactionObjectBase,
+        public static IDisposable SubscribeRightMouseDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
