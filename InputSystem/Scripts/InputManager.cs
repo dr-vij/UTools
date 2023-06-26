@@ -23,6 +23,7 @@ namespace UTools.Input
         private InputDevice m_ActiveDevice;
         private bool m_IsMouseOrPenInputStarted;
         private readonly GesturesContainer m_GesturesContainer = new();
+        private event ScrollHandler m_GlobalScrollEvent;
 
         public CameraTracer CameraTracer => m_CameraTracer;
 
@@ -47,6 +48,14 @@ namespace UTools.Input
                 Debug.LogWarning("Camera already registered");
             }
         }
+        
+        public delegate void ScrollHandler(Vector2 scrollDelta, Vector2 pointerPosition);
+
+        public IDisposable SubscribeGlobalScrollDelta(ScrollHandler scrollHandler)
+        {
+            m_GlobalScrollEvent += scrollHandler;
+            return new DisposableAction(() => m_GlobalScrollEvent -= scrollHandler);
+        }
 
         /// <summary>
         /// Create Actions and subscribe it's events
@@ -69,6 +78,8 @@ namespace UTools.Input
             m_Actions.GestureActions.MouseMiddle.canceled += OnMiddleMouseButtonUpEvent;
 
             m_Actions.GestureActions.MousePosition.performed += OnMousePositionEvent;
+
+            m_Actions.GestureActions.MouseScroll.performed += OnMouseScrollEvent;
         }
 
         /// <summary>
@@ -91,9 +102,14 @@ namespace UTools.Input
             m_Actions.GestureActions.MouseMiddle.canceled -= OnMiddleMouseButtonUpEvent;
 
             m_Actions.GestureActions.MousePosition.performed -= OnMousePositionEvent;
+
+            m_Actions.GestureActions.MouseScroll.performed -= OnMouseScrollEvent;
         }
 
         #region Mouse Gestures
+
+        private Vector2 m_MousePosition;
+        private readonly HashSet<int> m_PressedButtons = new();
 
         private void OnLeftMouseButtonDownEvent(InputAction.CallbackContext context) =>
             OnMouseDownPerformed(context, Helpers.LeftMouseInputId);
@@ -112,9 +128,6 @@ namespace UTools.Input
 
         private void OnMiddleMouseButtonUpEvent(InputAction.CallbackContext context) =>
             OnMouseUpPerformed(context, Helpers.MiddleMouseInputId);
-
-        private Vector2 m_MousePosition;
-        private readonly HashSet<int> m_PressedButtons = new();
 
         private void OnMousePositionEvent(InputAction.CallbackContext context)
         {
@@ -154,6 +167,16 @@ namespace UTools.Input
                 mouseAnalyzer.MouseButtonUp(buttonIndex);
 
             m_GesturesContainer.RemoveUnusedGestures();
+        }
+
+        private void OnMouseScrollEvent(InputAction.CallbackContext context)
+        {
+            if (!CanBeHandled(context))
+                return;
+
+            var scrollData = context.ReadValue<Vector2>();
+            if (!m_CameraTracer.IsOverUI(m_MousePosition))
+                m_GlobalScrollEvent?.Invoke(scrollData, m_MousePosition);
         }
 
         #endregion
@@ -350,7 +373,7 @@ namespace UTools.Input
         }
 
         #endregion
-        
+
         private void Update()
         {
             if (m_UpdateCausesGestureUpdates)
