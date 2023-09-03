@@ -75,13 +75,17 @@ namespace UTools.Outline
 
             cmd.SetGlobalTexture("_InitialImage", m_TempTexA);
             cmd.SetGlobalTexture("_MaskTexture", m_MaskTex);
-            cmd.SetGlobalFloatArray("_GaussSamples", OutlineHelpers.GetGaussSamples(16));
-            cmd.SetGlobalFloat("_Width", m_Feature.Settings.Width);
+            cmd.SetGlobalFloatArray("_GaussSamples", OutlineHelpers.GetGaussSamples(m_Feature.Settings.BlurWidth));
+            cmd.SetGlobalFloat("_BlurWidth", m_Feature.Settings.BlurWidth);
+            cmd.SetGlobalFloat("_OutlineWidth", m_Feature.Settings.OutlineWidth);
             cmd.SetGlobalColor("_OutlineColor", m_Feature.Settings.Color);
 
             Blitter.BlitCameraTexture(cmd, m_CameraTex, m_TempTexA);
-            Blitter.BlitCameraTexture(cmd, m_MaskTex, m_TempTexB, m_BlitOutlineMaterial, 0);
-            Blitter.BlitCameraTexture(cmd, m_TempTexB, m_CameraTex, m_BlitOutlineMaterial, 1);
+            //Outline passes
+            Blitter.BlitCameraTexture(cmd, m_MaskTex, m_CameraTex, m_BlitOutlineMaterial, 2);
+            //Blur passes
+             Blitter.BlitCameraTexture(cmd, m_CameraTex, m_TempTexB, m_BlitOutlineMaterial, 0);
+             Blitter.BlitCameraTexture(cmd, m_TempTexB, m_CameraTex, m_BlitOutlineMaterial, 1);
 
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
@@ -94,6 +98,11 @@ namespace UTools.Outline
             CoreUtils.Destroy(m_TempTexA);
             CoreUtils.Destroy(m_TempTexB);
             CoreUtils.Destroy(m_Depth);
+
+            m_MaskTex = null;
+            m_TempTexA = null;
+            m_TempTexB = null;
+            m_Depth = null;
         }
     }
 }

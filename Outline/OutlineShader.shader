@@ -8,10 +8,12 @@ Shader "Hidden/OutlineShader"
 
         float4 _OutlineColor = float4(1, 1, 1, 1);
         float _Intensity = 1;
-        float2 _BlitTexture_TexelSize; // = float2(0.001953125, 0.001953125);
-        int _Width = 5;
+        int _BlurWidth = 5;
+        int _OutlineWidth = 5;
 
+        float2 _BlitTexture_TexelSize;
         float _GaussSamples[32];
+
         TEXTURE2D_X(_InitialImage);
         SAMPLER(sampler_InitialImage);
 
@@ -23,76 +25,117 @@ Shader "Hidden/OutlineShader"
         TEXTURE2D_X(_MaskTexture);
         SAMPLER(sampler_MaskTexture);
 
-        float ExpandPlus(float2 uv, float2 offset, int k)
+
+        float OutlinePositive(float2 uv, float2 offset, int k)
         {
             return step(0.001, SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv + k * offset).r);
         }
 
-        float ExpandMinus(float2 uv, float2 offset, int k)
+        float OutlineNegative(float2 uv, float2 offset, int k)
         {
             return step(0.001, SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv - k * offset).r);
         }
 
-        float Expand(float2 uv, float2 offset)
+        // Accumulates horizontal or vertical blur intensity for the specified texture position.
+        // Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
+        //
+        // NOTE: Unroll directive is needed to make the method function on platforms like WebGL 1.0 where loops are not supported.
+        // If maximum outline width is changed here, it should be changed in OutlineResources.MaxWidth as well.
+        //
+        float Outline(float2 uv, float2 offset)
         {
             float intensity = 0;
-            // Accumulates horizontal or vertical blur intensity for the specified texture position.
-            // Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
-            //
-            // NOTE: Unroll directive is needed to make the method function on platforms like WebGL 1.0 where loops are not supported.
-            // If maximum outline width is changed here, it should be changed in OutlineResources.MaxWidth as well.
-            //
             [unroll(32)]
-            for (int k = 1; k <= _Width; ++k)
+            for (int k = 1; k <= _OutlineWidth; ++k)
             {
-                intensity = step(0.001, ExpandPlus(uv, offset, k));
-                intensity = max(step(0.001, ExpandMinus(uv, offset, k)), intensity);
+                intensity = OutlinePositive(uv, offset, k);
+                intensity = max(OutlineNegative(uv, offset, k), intensity);
             }
 
-            intensity = max(ExpandPlus(uv, offset, 0), intensity);
+            intensity = max(OutlinePositive(uv, offset, 0), intensity);
             return intensity;
         }
 
-        float CalcIntensityN0(float2 uv, float2 offset, int k)
+        float CalcIntensityPositive(float2 uv, float2 offset, int k)
         {
             return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv + k * offset).r * _GaussSamples[k];
         }
 
-        float CalcIntensityN1(float2 uv, float2 offset, int k)
+        float CalcIntensityNegative(float2 uv, float2 offset, int k)
         {
             return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv - k * offset).r * _GaussSamples[k];
         }
 
+        // Accumulates horizontal or vertical blur intensity for the specified texture position.
+        // Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
+        //
+        // NOTE: Unroll directive is needed to make the method function on platforms like WebGL 1.0 where loops are not supported.
+        // If maximum outline width is changed here, it should be changed in OutlineResources.MaxWidth as well.
+        //
         float CalcIntensity(float2 uv, float2 offset)
         {
             float intensity = 0;
-            // Accumulates horizontal or vertical blur intensity for the specified texture position.
-            // Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
-            //
-            // NOTE: Unroll directive is needed to make the method function on platforms like WebGL 1.0 where loops are not supported.
-            // If maximum outline width is changed here, it should be changed in OutlineResources.MaxWidth as well.
-            //
             [unroll(32)]
-            for (int k = 1; k <= _Width; ++k)
+            for (int k = 1; k <= _BlurWidth; ++k)
             {
-                intensity += CalcIntensityN0(uv, offset, k);
-                intensity += CalcIntensityN1(uv, offset, k);
+                intensity += CalcIntensityPositive(uv, offset, k);
+                intensity += CalcIntensityNegative(uv, offset, k);
             }
 
-            intensity += CalcIntensityN0(uv, offset, 0);
+            intensity += CalcIntensityPositive(uv, offset, 0);
             return intensity;
         }
 
-        float4 FragmentH(Varyings input) : SV_Target
+
+        float4 OutlineFragment(Varyings input) : SV_Target
+        {
+            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+            float2 uv = UnityStereoTransformScreenSpaceTex(input.texcoord);
+            float width = _OutlineWidth * _BlitTexture_TexelSize.x;
+            float height = _OutlineWidth * _BlitTexture_TexelSize.y;
+
+            const float TAU = 6.28318530;
+            const float steps = 32.0;
+
+            float intensity = 0;
+            for (int i = 0; i < steps; i++)
+            {
+                float angle = TAU * i / steps;
+                float2 offset = float2(cos(angle) * width, sin(angle) * height);
+                intensity = max(step(0.001, SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv + offset).r),
+                              intensity);
+            }
+            return float4(intensity, intensity, intensity, 1);
+        }
+
+        float4 FragmentHorizontalOutline(Varyings input) : SV_Target
         {
             UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
             float2 uv = UnityStereoTransformScreenSpaceTex(input.texcoord);
-            float intensity = CalcIntensity(uv, float2(_BlitTexture_TexelSize.x, 0));
+            float intensity = Outline(uv, float2(_BlitTexture_TexelSize.x, 0));
             return float4(intensity, intensity, intensity, 1);
         }
 
-        float4 FragmentV(Varyings input) : SV_Target
+        float4 FragmentVerticalOutline(Varyings input) : SV_Target
+        {
+            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
+            float2 uv = UnityStereoTransformScreenSpaceTex(input.texcoord);
+            float intensity = Outline(uv, float2(0, _BlitTexture_TexelSize.y));
+            return float4(intensity, intensity, intensity, 1);
+        }
+
+        float4 FragmentHorizontalBlur(Varyings input) : SV_Target
+        {
+            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
+            float2 uv = UnityStereoTransformScreenSpaceTex(input.texcoord);
+            float intensity = clamp(CalcIntensity(uv, float2(_BlitTexture_TexelSize.x, 0)), 0, 1);
+            return float4(intensity, intensity, intensity, 1);
+        }
+
+        float4 FragmentVerticalBlur(Varyings input) : SV_Target
         {
             UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
@@ -120,7 +163,7 @@ Shader "Hidden/OutlineShader"
 
             HLSLPROGRAM
             #pragma vertex Vert
-            #pragma fragment FragmentH
+            #pragma fragment FragmentHorizontalBlur
             ENDHLSL
         }
 
@@ -130,7 +173,27 @@ Shader "Hidden/OutlineShader"
 
             HLSLPROGRAM
             #pragma vertex Vert
-            #pragma fragment FragmentV
+            #pragma fragment FragmentVerticalBlur
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Horizontal Outline"
+
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment OutlineFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Vertical Outline"
+
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment OutlineFragment
             ENDHLSL
         }
     }

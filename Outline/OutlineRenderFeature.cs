@@ -12,11 +12,13 @@ namespace UTools.Outline
     public class OutlineSettings
     {
         [SerializeField] private Color m_Color = Color.white;
-        [SerializeField] [Range(1, 32)] private int m_Width = 16;
+        [SerializeField] [Range(1, 32)] private int m_OutlineWidth = 16;
+        [SerializeField] [Range(1, 32)] private int m_BlurWidth = 16;
         [SerializeField] private LayerMask m_LayerMask = -1;
 
         public Color Color => m_Color;
-        public int Width => m_Width;
+        public int OutlineWidth => m_OutlineWidth;
+        public int BlurWidth => m_BlurWidth;
         public LayerMask LayerMask => m_LayerMask;
     }
 
