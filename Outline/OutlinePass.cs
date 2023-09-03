@@ -94,10 +94,10 @@ namespace UTools.Outline
 
         public void Cleanup()
         {
-            CoreUtils.Destroy(m_MaskTex);
-            CoreUtils.Destroy(m_TempTexA);
-            CoreUtils.Destroy(m_TempTexB);
-            CoreUtils.Destroy(m_Depth);
+            m_MaskTex?.Release();
+            m_TempTexA?.Release();
+            m_TempTexB?.Release();
+            m_Depth?.Release();
 
             m_MaskTex = null;
             m_TempTexA = null;
