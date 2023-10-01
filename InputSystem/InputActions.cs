@@ -37,56 +37,11 @@ namespace UTools.Input
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""MouseLeft"",
-                    ""type"": ""Button"",
-                    ""id"": ""9163672d-d3b2-49a5-9544-5d96a4a90147"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""MouseRight"",
-                    ""type"": ""Button"",
-                    ""id"": ""9a0b9697-3395-4527-abfd-24e582412d25"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""MouseMiddle"",
-                    ""type"": ""Button"",
-                    ""id"": ""16b2934d-7ef5-4c4a-bcdf-060888ac29a6"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""MousePosition"",
-                    ""type"": ""Value"",
-                    ""id"": ""71cb9f8e-b05f-4d12-b735-556e6b242fc9"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""MouseScroll"",
-                    ""type"": ""Value"",
-                    ""id"": ""7b5cd01a-ccf4-4767-ae22-a7521d78fb72"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
                 {
-                    ""name"": ""MouseLeft"",
+                    ""name"": ""Mouse"",
                     ""id"": ""c5e88b36-41c0-41ef-b7db-774a84a057a5"",
                     ""path"": ""PointerInput"",
                     ""interactions"": """",
@@ -100,17 +55,6 @@ namespace UTools.Input
                     ""name"": ""Contact"",
                     ""id"": ""f40cb589-d9d9-4d02-b70e-2019907d9b47"",
                     ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Pointer"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""InputId"",
-                    ""id"": ""425e2bf3-cb4e-43d9-bd9b-d08fa3ddfa19"",
-                    ""path"": ""<Mouse>/pointerId"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -865,61 +809,6 @@ namespace UTools.Input
                     ""action"": ""Pointer"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c8c43c05-7976-4d85-bdaf-2a1ca13bb591"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseLeft"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""47fab4b6-ed87-43ae-9dee-2684ceefd97c"",
-                    ""path"": ""<Mouse>/rightButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseRight"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""231e54c9-203d-428d-84c1-3030e45dfe40"",
-                    ""path"": ""<Mouse>/middleButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseMiddle"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""ba602a46-5b54-4681-b457-e0f787c613a0"",
-                    ""path"": ""<Mouse>/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MousePosition"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""38da4f24-de27-49e3-a698-47d2301627c7"",
-                    ""path"": ""<Mouse>/scroll"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseScroll"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -929,11 +818,6 @@ namespace UTools.Input
             // GestureActions
             m_GestureActions = asset.FindActionMap("GestureActions", throwIfNotFound: true);
             m_GestureActions_Pointer = m_GestureActions.FindAction("Pointer", throwIfNotFound: true);
-            m_GestureActions_MouseLeft = m_GestureActions.FindAction("MouseLeft", throwIfNotFound: true);
-            m_GestureActions_MouseRight = m_GestureActions.FindAction("MouseRight", throwIfNotFound: true);
-            m_GestureActions_MouseMiddle = m_GestureActions.FindAction("MouseMiddle", throwIfNotFound: true);
-            m_GestureActions_MousePosition = m_GestureActions.FindAction("MousePosition", throwIfNotFound: true);
-            m_GestureActions_MouseScroll = m_GestureActions.FindAction("MouseScroll", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -996,21 +880,11 @@ namespace UTools.Input
         private readonly InputActionMap m_GestureActions;
         private List<IGestureActionsActions> m_GestureActionsActionsCallbackInterfaces = new List<IGestureActionsActions>();
         private readonly InputAction m_GestureActions_Pointer;
-        private readonly InputAction m_GestureActions_MouseLeft;
-        private readonly InputAction m_GestureActions_MouseRight;
-        private readonly InputAction m_GestureActions_MouseMiddle;
-        private readonly InputAction m_GestureActions_MousePosition;
-        private readonly InputAction m_GestureActions_MouseScroll;
         public struct GestureActionsActions
         {
             private @InputActions m_Wrapper;
             public GestureActionsActions(@InputActions wrapper) { m_Wrapper = wrapper; }
             public InputAction @Pointer => m_Wrapper.m_GestureActions_Pointer;
-            public InputAction @MouseLeft => m_Wrapper.m_GestureActions_MouseLeft;
-            public InputAction @MouseRight => m_Wrapper.m_GestureActions_MouseRight;
-            public InputAction @MouseMiddle => m_Wrapper.m_GestureActions_MouseMiddle;
-            public InputAction @MousePosition => m_Wrapper.m_GestureActions_MousePosition;
-            public InputAction @MouseScroll => m_Wrapper.m_GestureActions_MouseScroll;
             public InputActionMap Get() { return m_Wrapper.m_GestureActions; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -1023,21 +897,6 @@ namespace UTools.Input
                 @Pointer.started += instance.OnPointer;
                 @Pointer.performed += instance.OnPointer;
                 @Pointer.canceled += instance.OnPointer;
-                @MouseLeft.started += instance.OnMouseLeft;
-                @MouseLeft.performed += instance.OnMouseLeft;
-                @MouseLeft.canceled += instance.OnMouseLeft;
-                @MouseRight.started += instance.OnMouseRight;
-                @MouseRight.performed += instance.OnMouseRight;
-                @MouseRight.canceled += instance.OnMouseRight;
-                @MouseMiddle.started += instance.OnMouseMiddle;
-                @MouseMiddle.performed += instance.OnMouseMiddle;
-                @MouseMiddle.canceled += instance.OnMouseMiddle;
-                @MousePosition.started += instance.OnMousePosition;
-                @MousePosition.performed += instance.OnMousePosition;
-                @MousePosition.canceled += instance.OnMousePosition;
-                @MouseScroll.started += instance.OnMouseScroll;
-                @MouseScroll.performed += instance.OnMouseScroll;
-                @MouseScroll.canceled += instance.OnMouseScroll;
             }
 
             private void UnregisterCallbacks(IGestureActionsActions instance)
@@ -1045,21 +904,6 @@ namespace UTools.Input
                 @Pointer.started -= instance.OnPointer;
                 @Pointer.performed -= instance.OnPointer;
                 @Pointer.canceled -= instance.OnPointer;
-                @MouseLeft.started -= instance.OnMouseLeft;
-                @MouseLeft.performed -= instance.OnMouseLeft;
-                @MouseLeft.canceled -= instance.OnMouseLeft;
-                @MouseRight.started -= instance.OnMouseRight;
-                @MouseRight.performed -= instance.OnMouseRight;
-                @MouseRight.canceled -= instance.OnMouseRight;
-                @MouseMiddle.started -= instance.OnMouseMiddle;
-                @MouseMiddle.performed -= instance.OnMouseMiddle;
-                @MouseMiddle.canceled -= instance.OnMouseMiddle;
-                @MousePosition.started -= instance.OnMousePosition;
-                @MousePosition.performed -= instance.OnMousePosition;
-                @MousePosition.canceled -= instance.OnMousePosition;
-                @MouseScroll.started -= instance.OnMouseScroll;
-                @MouseScroll.performed -= instance.OnMouseScroll;
-                @MouseScroll.canceled -= instance.OnMouseScroll;
             }
 
             public void RemoveCallbacks(IGestureActionsActions instance)
@@ -1080,11 +924,6 @@ namespace UTools.Input
         public interface IGestureActionsActions
         {
             void OnPointer(InputAction.CallbackContext context);
-            void OnMouseLeft(InputAction.CallbackContext context);
-            void OnMouseRight(InputAction.CallbackContext context);
-            void OnMouseMiddle(InputAction.CallbackContext context);
-            void OnMousePosition(InputAction.CallbackContext context);
-            void OnMouseScroll(InputAction.CallbackContext context);
         }
     }
 }
