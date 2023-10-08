@@ -10,9 +10,9 @@ namespace UTools.Input
     /// </summary>
     public class InteractionEventArgs : EventArgs
     {
-        public InteractionObject HandleObject { get; private set; }
+        public InteractionObjectBase HandleObjectBase { get; private set; }
 
-        public bool IsHandled  { get; private set; }
+        public bool IsHandled { get; private set; }
 
         public Camera InteractionCamera { get; private set; }
 
@@ -29,12 +29,12 @@ namespace UTools.Input
                 Debug.LogError("event args camera cannot be changed");
         }
 
-        public void Handle(InteractionObject interactionObject)
+        public void Handle(InteractionObjectBase interactionObjectBase)
         {
-            if (interactionObject == null)
-                throw new ArgumentNullException("Handler object must not be null");
+            if (interactionObjectBase == null)
+                throw new ArgumentNullException(nameof(interactionObjectBase));
 
-            HandleObject = interactionObject;
+            HandleObjectBase = interactionObjectBase;
             IsHandled = true;
         }
     }
@@ -55,17 +55,31 @@ namespace UTools.Input
     public class PointerDragInteractionEventArgs : PointerInteractionEventArgs
     {
         public Vector2 PointerPrevPosition { get; private set; }
+        
+        public Vector2 PointerDelta => PointerPosition - PointerPrevPosition;
 
         public PointerDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Camera camera) : base(position, camera) => PointerPrevPosition = prevPosition;
+    }
+    
+    public class MouseInteractionEventArgs : PointerInteractionEventArgs
+    {
+        public virtual int Button { get; private set; }
+        
+        public MouseInteractionEventArgs(Vector2 position, int button, Camera camera) : base(position, camera) => Button = button;
+    }
+    
+    public class MouseDragInteractionEventArgs : PointerDragInteractionEventArgs
+    {
+        public virtual int Button { get; private set; }
+        
+        public MouseDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, int button, Camera camera) : base(position, prevPosition, camera) => Button = button;
     }
 
     public class TwoPointersDragInteractionEventArgs : PointerDragInteractionEventArgs
     {
         public Vector2 SecondaryPointerPosition { get; private set; }
         public Vector2 SecondaryPointerPrevPosition { get; private set; }
-
         public Vector2 PointersCenter => (PointerPosition + SecondaryPointerPosition) * 0.5f;
-
         public Vector2 PointerCenterPrev => (PointerPrevPosition + SecondaryPointerPrevPosition) * 0.5f;
 
         public TwoPointersDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Vector2 positionPointer2, Vector2 prevPositionPointer2, Camera camera) :

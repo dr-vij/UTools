@@ -34,7 +34,7 @@ namespace UTools.Input
         /// <param name="unityObject"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static bool TryFindInteractionObject(this GameObject unityObject, out InteractionObject result)
+        public static bool TryFindInteractionObject(this GameObject unityObject, out InteractionObjectBase result)
         {
             var wasFound = false;
             var currentTransform = unityObject.transform;
@@ -55,7 +55,8 @@ namespace UTools.Input
         /// <param name="unityTransform"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static bool TryFindInteractionObject(this Transform unityTransform, out InteractionObject result) => TryFindInteractionObject(unityTransform.gameObject, out result);
+        public static bool TryFindInteractionObject(this Transform unityTransform, out InteractionObjectBase result) =>
+            TryFindInteractionObject(unityTransform.gameObject, out result);
 
         /// <summary>
         /// Adds Interaction Ignorer to gameobject if it does not have it
@@ -74,7 +75,7 @@ namespace UTools.Input
         public static void MakeObjectIgnorer(this Transform unityTransform) => MakeObjectIgnorer(unityTransform.gameObject);
 
         /// <summary>
-        /// Removes interaction ignorers from gameobject if it has them
+        /// Removes interaction ignorers from gameObject if it has them
         /// </summary>
         /// <param name="unityObject"></param>
         public static void UnmakeObjectIgnorer(this GameObject unityObject)
@@ -84,7 +85,7 @@ namespace UTools.Input
         }
 
         /// <summary>
-        /// Removes interaction ignorers from gameobject if it has them
+        /// Removes interaction ignorers from gameObject if it has them
         /// </summary>
         /// <param name="unityTransform"></param>
         public static void UnmakeObjectIgnorer(this Transform unityTransform) => UnmakeObjectIgnorer(unityTransform.gameObject);
@@ -93,6 +94,7 @@ namespace UTools.Input
         /// Adds Interaction Ignorers to all objects in the tree
         /// </summary>
         /// <param name="unityObject"></param>
+        /// <param name="includeInactive"></param>
         public static void MakeTreeInteractionIgnorer(this GameObject unityObject, bool includeInactive = true)
         {
             unityObject.GetComponentsInChildren(includeInactive, m_TransformsBuffer);
@@ -105,7 +107,8 @@ namespace UTools.Input
         /// </summary>
         /// <param name="unityTransform"></param>
         /// <param name="includeInactive"></param>
-        public static void MakeTreeInteractionIgnorer(this Transform unityTransform, bool includeInactive = true) => MakeTreeInteractionIgnorer(unityTransform.gameObject, includeInactive);
+        public static void MakeTreeInteractionIgnorer(this Transform unityTransform, bool includeInactive = true) =>
+            MakeTreeInteractionIgnorer(unityTransform.gameObject, includeInactive);
 
         /// <summary>
         /// Removes Interaction Ignorers from all objects in the tree
@@ -124,90 +127,272 @@ namespace UTools.Input
         /// </summary>
         /// <param name="unityTransform"></param>
         /// <param name="includeInactive"></param>
-        public static void UnmakeTreeInteractionIgnorer(this Transform unityTransform, bool includeInactive = true) => UnmakeTreeInteractionIgnorer(unityTransform.gameObject, includeInactive);
+        public static void UnmakeTreeInteractionIgnorer(this Transform unityTransform, bool includeInactive = true) =>
+            UnmakeTreeInteractionIgnorer(unityTransform.gameObject, includeInactive);
 
         #endregion
 
-        #region Subscribtions
+        #region MouseSubscriptions
+
+        public static IDisposable SubscribeMouseGrabEvent(
+            this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseInteractionEventArgs> grabStartHandler,
+            EventHandler<MouseInteractionEventArgs> grabEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
+        }
+
+        public static IDisposable SubscribeLeftMouseGrabEvent(
+            this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseInteractionEventArgs> grabStartHandler,
+            EventHandler<MouseInteractionEventArgs> grabEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
+        }
+
+        public static IDisposable SubscribeRightMouseGrabEvent(
+            this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseInteractionEventArgs> grabStartHandler,
+            EventHandler<MouseInteractionEventArgs> grabEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
+        }
+
+        public static IDisposable SubscribeMiddleMouseGrabEvent(
+            this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseInteractionEventArgs> grabStartHandler,
+            EventHandler<MouseInteractionEventArgs> grabEndHandler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
+        }
+
+        public static IDisposable SubscribeMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            return interactionObjectBase.Subscribe(MouseInteractionEvents.MousePressEvent, handler, handleEvents, ignoreHandled);
+        }
+
+        public static IDisposable SubscribeLeftMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            return interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftPressEvent, handler, handleEvents, ignoreHandled);
+        }
+
+        public static IDisposable SubscribeRightMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            return interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightPressEvent, handler, handleEvents, ignoreHandled);
+        }
+
+        public static IDisposable SubscribeMiddleMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
+            bool handleEvents = true, bool ignoreHandled = false)
+        {
+            return interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddlePressEvent, handler, handleEvents, ignoreHandled);
+        }
+
+        public static IDisposable SubscribeMouseDragEvent(this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
+        )
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragStartEvent, mouseDragStartHandler);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragPerformEvent, mouseDragHandler);
+            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragEndEvent, mouseDragEndHandler);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+                sub3.Dispose();
+            });
+        }
+
+        public static IDisposable SubscribeLeftMouseDragEvent(this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragPerformHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
+        )
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragStartEvent, mouseDragStartHandler);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragPerformEvent, mouseDragPerformHandler);
+            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragEndEvent, mouseDragEndHandler);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+                sub3.Dispose();
+            });
+        }
+        
+        public static IDisposable SubscribeRightMouseDragEvent(this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragPerformHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
+        )
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragStartEvent, mouseDragStartHandler);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragPerformEvent, mouseDragPerformHandler);
+            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragEndEvent, mouseDragEndHandler);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+                sub3.Dispose();
+            });
+        }
+        
+        public static IDisposable SubscribeMiddleMouseDragEvent(this InteractionObjectBase interactionObjectBase,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragPerformHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
+        )
+        {
+            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragStartEvent, mouseDragStartHandler);
+            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragPerformEvent, mouseDragPerformHandler);
+            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragEndEvent, mouseDragEndHandler);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+                sub3.Dispose();
+            });
+        }
+
+        #endregion
+
+        #region Subscriptions
+
         /// <summary>
         /// Unified pointer press subscription
         /// </summary>
-        /// <param name="interactionObject"></param>
+        /// <param name="interactionObjectBase"></param>
         /// <param name="handler"></param>
-        public static IDisposable SubscribePointerPressEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> handler,
+        /// <param name="handleEvents"></param>
+        /// <param name="ignoreHandled"></param>
+        public static IDisposable SubscribePointerPressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<PointerInteractionEventArgs> handler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObject.Subscribe(InteractionEvents.PointerPressEvent, handler, handleEvents, ignoreHandled);
+            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerPressEvent, handler, handleEvents, ignoreHandled);
         }
 
         /// <summary>
         /// Unified pointer drag subscription
         /// </summary>
-        /// <param name="interactionObject"></param>
+        /// <param name="interactionObjectBase"></param>
         /// <param name="pointerDragStartHandler"></param>
-        /// <param name="pointerDragHandler"></param>
+        /// <param name="pointerDragPerformHandler"></param>
         /// <param name="pointerDragEndHandler"></param>
-        public static IDisposable SubscribePointerDragEvent(this InteractionObject interactionObject,
+        /// <param name="handleEvents"></param>
+        /// <param name="ignoreHandled"></param>
+        public static IDisposable SubscribePointerDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<PointerDragInteractionEventArgs> pointerDragStartHandler,
-            EventHandler<PointerDragInteractionEventArgs> pointerDragHandler,
+            EventHandler<PointerDragInteractionEventArgs> pointerDragPerformHandler,
             EventHandler<PointerDragInteractionEventArgs> pointerDragEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObject.Subscribe(InteractionEvents.PointerDragStartEvent, pointerDragStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObject.Subscribe(InteractionEvents.PointerDragEvent, pointerDragHandler, handleEvents, ignoreHandled);
-            var sub3 = interactionObject.Subscribe(InteractionEvents.PointerDragEndEvent, pointerDragEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() => { sub1.Dispose(); sub2.Dispose(); sub3.Dispose(); });
+            var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragStartEvent, pointerDragStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragPerformEvent, pointerDragPerformHandler, handleEvents, ignoreHandled);
+            var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragEndEvent, pointerDragEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+                sub3.Dispose();
+            });
         }
 
         /// <summary>
         /// Unified two pointer drag subscription
         /// </summary>
-        /// <param name="interactionObject"></param>
+        /// <param name="interactionObjectBase"></param>
         /// <param name="twoPointersDragStartHandler"></param>
-        /// <param name="twoPointersDragHandler"></param>
+        /// <param name="twoPointersDragPerformHandler"></param>
         /// <param name="twoPointersDragEndHandler"></param>
         /// <param name="handleEvents"></param>
         /// <param name="ignoreHandled"></param>
         /// <returns></returns>
-        public static IDisposable SubscribeTwoPointersDragEnvent(this InteractionObject interactionObject,
+        public static IDisposable SubscribeTwoPointersDragEnvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragStartHandler,
-            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragHandler,
+            EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragPerformHandler,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObject.Subscribe(InteractionEvents.TwoPointersDragStartEvent, twoPointersDragStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObject.Subscribe(InteractionEvents.TwoPointersDragEvent, twoPointersDragHandler, handleEvents, ignoreHandled);
-            var sub3 = interactionObject.Subscribe(InteractionEvents.TwoPointersDragEndEvent, twoPointersDragEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() => { sub1.Dispose(); sub2.Dispose(); sub3.Dispose(); });
+            var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragStartEvent, twoPointersDragStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragPerformEvent, twoPointersDragPerformHandler, handleEvents, ignoreHandled);
+            var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragEndEvent, twoPointersDragEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+                sub3.Dispose();
+            });
         }
 
         /// <summary>
         /// Unified grab/grab end subscription
         /// </summary>
-        /// <param name="interactionObject"></param>
+        /// <param name="interactionObjectBase"></param>
         /// <param name="pointerGrabStartHandler"></param>
         /// <param name="pointerGrabEndHandler"></param>
+        /// <param name="handleEvents"></param>
+        /// <param name="ignoreHandled"></param>
         /// <returns></returns>
-        public static IDisposable SubscribePointerGrabEvent(this InteractionObject interactionObject,
+        public static IDisposable SubscribePointerGrabEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<PointerInteractionEventArgs> pointerGrabStartHandler,
             EventHandler<PointerInteractionEventArgs> pointerGrabEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObject.Subscribe(InteractionEvents.PointerGrabStartEvent, pointerGrabStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObject.Subscribe(InteractionEvents.PointerGrabEndEvent, pointerGrabEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() => { sub1.Dispose(); sub2.Dispose(); });
+            var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerGrabEvent, pointerGrabStartHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerReleaseEvent, pointerGrabEndHandler, handleEvents, ignoreHandled);
+            return new DisposableAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
         }
 
         /// <summary>
         /// Unified pointer move subscription
         /// </summary>
-        /// <param name="interactionObject"></param>
+        /// <param name="interactionObjectBase"></param>
         /// <param name="pointerMoveHandler"></param>
-        public static IDisposable SubscribePointerMoveEvent(this InteractionObject interactionObject, EventHandler<PointerInteractionEventArgs> pointerMoveHandler,
+        /// <param name="handleEvents"></param>
+        /// <param name="ignoreHandled"></param>
+        public static IDisposable SubscribePointerMoveEvent(this InteractionObjectBase interactionObjectBase,
+            EventHandler<PointerInteractionEventArgs> pointerMoveHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObject.Subscribe(InteractionEvents.PointerMoveEvent, pointerMoveHandler, handleEvents, ignoreHandled);
+            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerMoveEvent, pointerMoveHandler, handleEvents, ignoreHandled);
         }
+
         #endregion
     }
 }

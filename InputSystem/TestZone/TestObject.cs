@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UTools.Input;
 
-[RequireComponent(typeof(InteractionObject))]
+[RequireComponent(typeof(InteractionObjectBase))]
 public class TestObject : MonoBehaviour
 {
     [SerializeField] private bool m_SubscribeDrag = true;
@@ -12,7 +12,7 @@ public class TestObject : MonoBehaviour
     [SerializeField] private bool m_SubscribeGrab = true;
     [SerializeField] private bool m_SubscribeScale = true;
 
-    private InteractionObject m_InteractionObj;
+    private InteractionObjectBase m_InteractionObj;
     private Renderer m_Renderer;
     private Vector3 m_InitialScale;
 
@@ -23,7 +23,7 @@ public class TestObject : MonoBehaviour
 
     private void Awake()
     {
-        m_InteractionObj = GetComponent<InteractionObject>();
+        m_InteractionObj = GetComponent<InteractionObjectBase>();
 
         if (m_SubscribeDrag)
             m_InteractionObj.SubscribePointerDragEvent(OnDragStart, OnDrag, OnDragEnd);

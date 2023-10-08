@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace UTools.Input
@@ -9,20 +7,18 @@ namespace UTools.Input
     {
         public int ID { get; private set; }
         public Vector2 CreationPosition { get; private set; }
-
         public Vector2 TrackStartPosition { get; private set; }
         public Vector2 CurrentPosition { get; private set; }
-        public Vector2 PrevPosition { get; private set; }
+        public Vector2 PreviousPosition { get; private set; }
 
-        public event Action<InteractionPointer> PointerUpdateEvent;
+        public event Action<InteractionPointer> OnPointerUpdateEvent;
 
         public InteractionPointer(int id, Vector2 position)
         {
             CreationPosition = position;
-
             TrackStartPosition = position;
             CurrentPosition = position;
-            PrevPosition = position;
+            PreviousPosition = position;
 
             ID = id;
         }
@@ -30,30 +26,29 @@ namespace UTools.Input
         /// <summary>
         /// Sets previous position current
         /// </summary>
-        public void SilentResetLastPosition()
+        public void ResetLastPositionSilently()
         {
-            PrevPosition = CurrentPosition;
+            PreviousPosition = CurrentPosition;
         }
 
         /// <summary>
         /// Sets TrackStartPosition and PrevPosition from Current position
         /// </summary>
-        public void SilentResetPointerTracking()
+        public void ResetPointerTrackingSilently()
         {
             TrackStartPosition = CurrentPosition;
-            PrevPosition = CurrentPosition;
+            PreviousPosition = CurrentPosition;
         }
 
         /// <summary>
         /// Updates position and raises event
         /// </summary>
         /// <param name="newPosition"></param>
-        public void UpdateDataAndRaise(Vector2 newPosition)
+        public void UpdatePositionAndRaise(Vector2 newPosition)
         {
-            PrevPosition = CurrentPosition;
+            PreviousPosition = CurrentPosition;
             CurrentPosition = newPosition;
-
-            PointerUpdateEvent?.Invoke(this);
+            OnPointerUpdateEvent?.Invoke(this);
         }
     }
 }

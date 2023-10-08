@@ -6,7 +6,7 @@ using TMPro;
 
 namespace UTools
 {
-    public class TextDebugger : SingletonMonobehaviour<TextDebugger>
+    public class TextDebugger : SingletonMonoBehaviour<TextDebugger>
     {
         [SerializeField] private TextMeshProUGUI mText = default;
         [SerializeField] private Color mTextColor = Color.black;

@@ -1,13 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.Utilities;
-using UTools;
-
 
 namespace UTools.Input
 {
@@ -18,7 +14,6 @@ namespace UTools.Input
         public const int MiddleMouseInputId = PointerInputModule.kMouseMiddleId;
         public const int PenInputId = int.MinValue;
     }
-
 
     // What we do in PointerInputManager is to simply create a separate action for each input we need for PointerInput.
     // This here shows a possible alternative that sources all inputs as a single value using a composite. Has pros
@@ -32,7 +27,6 @@ namespace UTools.Input
 #endif
     public class PointerInputComposite : InputBindingComposite<PointerInput>
     {
-
         [InputControl(layout = "Button")] public int Contact;
         [InputControl(layout = "Vector2")] public int Position;
         [InputControl(layout = "Vector2")] public int Tilt;
@@ -48,7 +42,7 @@ namespace UTools.Input
 
             //Primary data
             var contact = context.ReadValueAsButton(Contact);
-            var pointerId = context.ReadValue<int>(InputId);
+            var pointerId = context.ReadValue<int>(InputId); //Input ID does not work for mouse buttons
             var position = context.ReadValue<Vector2, Vector2MagnitudeComparer>(Position);
 
             //Secondary data
@@ -63,10 +57,10 @@ namespace UTools.Input
                 InputId = pointerId,
                 Position = position,
 
-                Tilt = tilt != default ? tilt : (Vector2?)null,
-                Pressure = pressure > 0 ? pressure : (float?)null,
-                Radius = radius.sqrMagnitude > 0 ? radius : (Vector2?)null,
-                Twist = twist > 0 ? twist : (float?)null,
+                Tilt = tilt != default ? tilt : null,
+                Pressure = pressure > 0 ? pressure : null,
+                Radius = radius.sqrMagnitude > 0 ? radius : null,
+                Twist = twist > 0 ? twist : null,
             };
         }
 
@@ -77,5 +71,4 @@ namespace UTools.Input
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Register() => InputSystem.RegisterBindingComposite<PointerInputComposite>();
     }
-
 }
