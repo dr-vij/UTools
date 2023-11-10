@@ -9,7 +9,7 @@ namespace UTools
     {
         public bool IsDisposed { get; private set; }
 
-        public event Action DisposeEvent;
+        public event Action Disposed;
 
         public void Dispose()
         {
@@ -17,8 +17,8 @@ namespace UTools
             {
                 IsDisposed = true;
                 OnDispose();
-                DisposeEvent?.Invoke();
-                DisposeEvent = null;
+                Disposed?.Invoke();
+                Disposed = null;
             }
         }
 

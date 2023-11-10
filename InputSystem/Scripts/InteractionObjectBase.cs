@@ -24,7 +24,7 @@ namespace UTools.Input
         {
             handler ??= (_, _) => { };
             AddSubscription(evt, handler, handleEvent, ignoreHandled);
-            return new DisposableAction(() => RemoveSubscription(evt, handler));
+            return new DisposeAction(() => RemoveSubscription(evt, handler));
         }
 
         /// <summary>

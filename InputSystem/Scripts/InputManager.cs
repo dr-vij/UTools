@@ -54,7 +54,7 @@ namespace UTools.Input
         public IDisposable SubscribeGlobalScrollDelta(ScrollHandler scrollHandler)
         {
             m_GlobalScrollEvent += scrollHandler;
-            return new DisposableAction(() => m_GlobalScrollEvent -= scrollHandler);
+            return new DisposeAction(() => m_GlobalScrollEvent -= scrollHandler);
         }
 
         /// <summary>

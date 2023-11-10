@@ -142,7 +142,7 @@ namespace UTools.Input
         {
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -157,7 +157,7 @@ namespace UTools.Input
         {
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -172,7 +172,7 @@ namespace UTools.Input
         {
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -187,7 +187,7 @@ namespace UTools.Input
         {
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -227,7 +227,7 @@ namespace UTools.Input
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragStartEvent, mouseDragStartHandler);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragPerformEvent, mouseDragHandler);
             var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragEndEvent, mouseDragEndHandler);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -244,7 +244,7 @@ namespace UTools.Input
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragStartEvent, mouseDragStartHandler);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragPerformEvent, mouseDragPerformHandler);
             var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragEndEvent, mouseDragEndHandler);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -261,7 +261,7 @@ namespace UTools.Input
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragStartEvent, mouseDragStartHandler);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragPerformEvent, mouseDragPerformHandler);
             var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragEndEvent, mouseDragEndHandler);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -278,7 +278,7 @@ namespace UTools.Input
             var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragStartEvent, mouseDragStartHandler);
             var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragPerformEvent, mouseDragPerformHandler);
             var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragEndEvent, mouseDragEndHandler);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -321,7 +321,7 @@ namespace UTools.Input
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragStartEvent, pointerDragStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragPerformEvent, pointerDragPerformHandler, handleEvents, ignoreHandled);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragEndEvent, pointerDragEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -348,7 +348,7 @@ namespace UTools.Input
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragStartEvent, twoPointersDragStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragPerformEvent, twoPointersDragPerformHandler, handleEvents, ignoreHandled);
             var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.TwoPointersDragEndEvent, twoPointersDragEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();
@@ -372,7 +372,7 @@ namespace UTools.Input
         {
             var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerGrabEvent, pointerGrabStartHandler, handleEvents, ignoreHandled);
             var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerReleaseEvent, pointerGrabEndHandler, handleEvents, ignoreHandled);
-            return new DisposableAction(() =>
+            return new DisposeAction(() =>
             {
                 sub1.Dispose();
                 sub2.Dispose();

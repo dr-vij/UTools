@@ -1,10 +1,22 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace UTools
 {
+    public class DisposableCombiner : IDisposable
+    {
+        private readonly List<IDisposable> m_Disposable = new();
+
+        public void AddDisposable(IDisposable disposable) => m_Disposable.Add(disposable);
+
+        public void Dispose()
+        {
+            foreach (var disposable in m_Disposable)
+                disposable.Dispose();
+            m_Disposable.Clear();
+        }
+    }
+
     public static class DisposeExtensions
     {
         /// <summary>
@@ -12,7 +24,7 @@ namespace UTools
         /// </summary>
         /// <param name="disposable"></param>
         /// <param name="action"></param>
-        public static void DisposeWhen(this IDisposable disposable, ref Action action)
+        public static void DisposeOn(this IDisposable disposable, ref Action action)
         {
             if (disposable != null)
                 action += disposable.Dispose;
@@ -24,34 +36,39 @@ namespace UTools
         /// <param name="disposable"></param>
         /// <param name="disposeNotifier"></param>
         /// <returns></returns>
-        public static IDisposable DisposeWhenNotifierDisposed(this IDisposable disposable, IDisposedNotifier disposeNotifier)
+        public static IDisposable DisposeOnDisposed(this IDisposable disposable, IDisposedNotifier disposeNotifier)
         {
-            if (disposable == null)
-                return new DisposableAction(() => { });
+            if (disposable != null)
+                disposeNotifier.Disposed += disposable.Dispose;
 
-            //Защита от двойного вызова. При первом вызове делегат отпускается и ссылка на объект "disposable" больше не держится
-            //This is protection from second call. When first time called the delegate will be freed and the link to disposable  will not be kept anymore
-            var disposeAction = new DisposableAction(disposable.Dispose);
-            disposeNotifier.DisposeEvent += disposeAction.Dispose;
-            return new DisposableAction(() => { disposeAction.Dispose(); disposeNotifier.DisposeEvent -= disposeAction.Dispose; });
+            if (disposable is IDisposedNotifier disposableLifeEndNotifier)
+                disposableLifeEndNotifier.Disposed += () => disposeNotifier.Disposed -= disposable.Dispose;
+
+            return disposable;
         }
 
         /// <summary>
-        /// The IDisposableObject will be disposed when IDisposedNotifier is disposed
+        /// Add IDisposable to DisposableCombiner
         /// </summary>
-        /// <param name="disposableObject"></param>
-        /// <param name="disposeNotifier"></param>
-        /// <returns></returns>
-        public static IDisposable DisposeIDisposableWhenNotifierDisposed(this IDisposableObject disposableObject, IDisposedNotifier disposeNotifier)
+        /// <param name="disposable">Original IDisposable object to be added</param>
+        /// <param name="combiner">DisposableCombiner where Original IDisposable object will be added</param>
+        /// <returns>Original IDisposable object</returns>
+        public static IDisposable CombineTo(this IDisposable disposable, DisposableCombiner combiner)
         {
-            if (disposableObject == null)
-                return new DisposableAction(() => { });
+            combiner.AddDisposable(disposable);
+            return disposable;
+        }
 
-            Action unsubscriber = () => { disposeNotifier.DisposeEvent -= disposableObject.Dispose; };
-            disposableObject.DisposeEvent += unsubscriber;
-
-            disposeNotifier.DisposeEvent += disposableObject.Dispose;
-            return new DisposableAction(unsubscriber);
+        /// <summary>
+        /// Subscribe to LifeEnd action
+        /// </summary>
+        /// <param name="disposeNotifier"></param>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        public static IDisposable AddActionToDisposeEvent(this IDisposedNotifier disposeNotifier, Action handler)
+        {
+            disposeNotifier.Disposed += handler;
+            return new DisposeAction(() => disposeNotifier.Disposed -= handler);
         }
     }
 }

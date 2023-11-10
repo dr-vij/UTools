@@ -12,7 +12,7 @@ namespace UTools
         /// </summary>
         public bool IsDisposed { get; private set; }
 
-        public event Action DisposeEvent;
+        public event Action Disposed;
 
         /// <summary>
         ///  This is special workaround for Unity, cause object can be created, then destroyed, then activated and Awake will be called :)
@@ -35,8 +35,8 @@ namespace UTools
             {
                 IsDisposed = true;
                 OnDispose();
-                DisposeEvent?.Invoke();
-                DisposeEvent = null;
+                Disposed?.Invoke();
+                Disposed = null;
             }
 
             if (this != null)

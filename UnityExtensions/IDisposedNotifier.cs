@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public interface IDisposableObject : IDisposable, IDisposedNotifier
-{
-}
 
-public interface IDisposedNotifier 
+namespace UTools
 {
-    public event Action DisposeEvent;
+    public interface IDisposedNotifier
+    {
+        public event Action Disposed;
+    }
 }

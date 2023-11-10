@@ -11,12 +11,12 @@ namespace UTools
     /// <typeparam name="T"></typeparam>
     public class FuncComparer<T> : IComparer<T>
     {
-        private Func<T, T, int> mComparer;
+        private Func<T, T, int> m_Comparer;
 
-        public FuncComparer(Func<T, T, int> comparer) => mComparer = comparer;
+        public FuncComparer(Func<T, T, int> comparer) => m_Comparer = comparer;
 
         public static IComparer<T> Create(Func<T, T, int> comparer) => new FuncComparer<T>(comparer);
 
-        public int Compare(T x, T y) => mComparer(x, y);
+        public int Compare(T x, T y) => m_Comparer(x, y);
     }
 }
