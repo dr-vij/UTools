@@ -11,7 +11,6 @@ Shader "Hidden/OutlineShader"
         int _BlurWidth = 5;
         int _OutlineWidth = 5;
 
-        float2 _BlitTexture_TexelSize;
         float _GaussSamples[32];
 
         TEXTURE2D_X(_InitialImage);
