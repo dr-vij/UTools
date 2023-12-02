@@ -3,12 +3,43 @@ using System.Collections.Generic;
 
 namespace UTools
 {
+    /// <summary>
+    /// Class that combines multiple IDisposable objects into one, allowing them to be disposed together.
+    /// </summary>
     public class DisposableCombiner : IDisposable
     {
+        /// <summary>
+        /// List of IDisposable objects to be disposed.
+        /// </summary>
         private readonly List<IDisposable> m_Disposable = new();
 
+        /// <summary>
+        /// Constructor that accepts multiple IDisposable objects.
+        /// </summary>
+        /// <param name="disposables">Array of IDisposable objects to be added to the list.</param>
+        public DisposableCombiner(params IDisposable[] disposables) => m_Disposable.AddRange(disposables);
+
+        /// <summary>
+        /// Constructor that accepts a single IDisposable object.
+        /// </summary>
+        /// <param name="disposable">IDisposable object to be added to the list.</param>
+        public DisposableCombiner(IDisposable disposable) => m_Disposable.Add(disposable);
+
+        /// <summary>
+        /// Method to add multiple IDisposable objects to the list.
+        /// </summary>
+        /// <param name="disposables">Array of IDisposable objects to be added to the list.</param>
+        public void AddDisposable(params IDisposable[] disposables) => m_Disposable.AddRange(disposables);
+
+        /// <summary>
+        /// Method to add a single IDisposable object to the list.
+        /// </summary>
+        /// <param name="disposable">IDisposable object to be added to the list.</param>
         public void AddDisposable(IDisposable disposable) => m_Disposable.Add(disposable);
 
+        /// <summary>
+        /// Method to dispose all IDisposable objects in the list and clear the list.
+        /// </summary>
         public void Dispose()
         {
             foreach (var disposable in m_Disposable)
