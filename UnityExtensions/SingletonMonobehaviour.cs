@@ -10,7 +10,7 @@ namespace UTools
         {
             get
             {
-                if (m_Instance == null)
+                if (((object)m_Instance) == null)
                 {
                     var instances = FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                     if (instances.Length == 0)
