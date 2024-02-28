@@ -7,7 +7,6 @@ Shader "Hidden/OutlineShader"
         #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
         float4 _OutlineColor = float4(1, 1, 1, 1);
-        float _Intensity = 1;
         int _BlurWidth = 5;
         int _OutlineWidth = 5;
 
@@ -85,7 +84,6 @@ Shader "Hidden/OutlineShader"
             return intensity;
         }
 
-
         float4 OutlineFragment(Varyings input) : SV_Target
         {
             UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
@@ -102,26 +100,8 @@ Shader "Hidden/OutlineShader"
                 float angle = TAU * i / steps;
                 float2 offset = float2(cos(angle) * width, sin(angle) * height);
                 intensity = max(step(0.001, SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_BlitTexture, uv + offset).r),
-                              intensity);
+                                intensity);
             }
-            return float4(intensity, intensity, intensity, 1);
-        }
-
-        float4 FragmentHorizontalOutline(Varyings input) : SV_Target
-        {
-            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-
-            float2 uv = UnityStereoTransformScreenSpaceTex(input.texcoord);
-            float intensity = Outline(uv, float2(_BlitTexture_TexelSize.x, 0));
-            return float4(intensity, intensity, intensity, 1);
-        }
-
-        float4 FragmentVerticalOutline(Varyings input) : SV_Target
-        {
-            UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-
-            float2 uv = UnityStereoTransformScreenSpaceTex(input.texcoord);
-            float intensity = Outline(uv, float2(0, _BlitTexture_TexelSize.y));
             return float4(intensity, intensity, intensity, 1);
         }
 
@@ -156,6 +136,18 @@ Shader "Hidden/OutlineShader"
         ZWrite Off
         Cull Off
 
+        //Outline pass. does the outlining of the mask
+        Pass
+        {
+            Name "Outline"
+
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment OutlineFragment
+            ENDHLSL
+        }
+        
+        //Horizontal blur pass. 
         Pass
         {
             Name "Horizontal blur"
@@ -173,26 +165,6 @@ Shader "Hidden/OutlineShader"
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment FragmentVerticalBlur
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Name "Horizontal Outline"
-
-            HLSLPROGRAM
-            #pragma vertex Vert
-            #pragma fragment OutlineFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Name "Vertical Outline"
-
-            HLSLPROGRAM
-            #pragma vertex Vert
-            #pragma fragment OutlineFragment
             ENDHLSL
         }
     }
