@@ -55,9 +55,10 @@ namespace UTools.Outline
 
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
-                const string passName = "Prepare Mask Pass";
-                const string blitPassName = "Blit Mask Pass";
-                const string blitBackPassName = "Blit Back Pass";
+                const string maskPassName = "Prepare Mask Pass";
+                const string outlinePassName = "Blit Outline Pass";
+                const string horizontalPassName = "Blit Horizontal Blur Pass";
+                const string verticalPassName = "Blit Vertical Blur Final Pass";
 
                 var resourceData = frameData.Get<UniversalResourceData>();
 
@@ -71,7 +72,7 @@ namespace UTools.Outline
                 var tempTextureB = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, "TempTextureB", false);
 
                 //Here we render the mask of our objects.
-                using (var maskBuilder = renderGraph.AddRasterRenderPass<MaskPassData>(passName, out var passData))
+                using (var maskBuilder = renderGraph.AddRasterRenderPass<MaskPassData>(maskPassName, out var passData))
                 {
                     //Prepare render list of affected objects
                     passData.RenderersList = PrepareRenderList(renderGraph, frameData);
@@ -82,7 +83,7 @@ namespace UTools.Outline
                 }
 
                 //here we copy this mask and outline it
-                using (var outlineBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(blitPassName, out var blitPassData))
+                using (var outlineBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(outlinePassName, out var blitPassData))
                 {
                     blitPassData.SourceTexture = maskTexture;
                     blitPassData.OutlineSettings = m_OutlineSettings;
@@ -104,7 +105,7 @@ namespace UTools.Outline
                 }
 
                 //here we blur the outline horizontally
-                using (var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>("Horizontal Blur Pass", out var horizontalBlurPassData))
+                using (var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(horizontalPassName, out var horizontalBlurPassData))
                 {
                     horizontalBlurPassData.SourceTexture = tempTextureA;
                     horizontalBlurPassData.OutlineSettings = m_OutlineSettings;
@@ -127,7 +128,7 @@ namespace UTools.Outline
                 }
 
                 //here we blur the outline vertically, and return the result
-                using (var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>("Vertical Blur Pass and result", out var horizontalBlurPassData))
+                using (var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(verticalPassName, out var horizontalBlurPassData))
                 {
                     horizontalBlurPassData.SourceTexture = tempTextureB;
                     horizontalBlurPassData.MaskTexture = maskTexture;
