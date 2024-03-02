@@ -10,19 +10,14 @@ namespace UTools.Outline
     {
         private class CustomRenderPass : ScriptableRenderPass
         {
-            private class MaskPassData
+            private class PassData
             {
                 internal RendererListHandle RenderersList;
-            }
 
-            private class BlitPassData
-            {
-                internal TextureHandle SourceTexture;
-            }
-
-            private class OutlinePassData : BlitPassData
-            {
                 internal OutlineSettingsData OutlineSettings;
+                
+                //Textures For Blit
+                internal TextureHandle SourceTexture;
                 internal TextureHandle InitialTexture;
                 internal TextureHandle MaskTexture;
             }
@@ -31,12 +26,12 @@ namespace UTools.Outline
 
             private static readonly int BlitTexturePropertyId = Shader.PropertyToID("_BlitTexture");
             private static readonly int BlitScaleBiasPropertyId = Shader.PropertyToID("_BlitScaleBias");
-            private static readonly int OutlineWidth = Shader.PropertyToID("_OutlineWidth");
-            private static readonly int BlurWidth = Shader.PropertyToID("_BlurWidth");
-            private static readonly int OutlineColor = Shader.PropertyToID("_OutlineColor");
-            private static readonly int GaussSamples = Shader.PropertyToID("_GaussSamples");
-            private static readonly int MaskTexture = Shader.PropertyToID("_MaskTexture");
-            private static readonly int InitialImage = Shader.PropertyToID("_InitialImage");
+            private static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
+            private static readonly int BlurWidthId = Shader.PropertyToID("_BlurWidth");
+            private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
+            private static readonly int GaussSamplesId = Shader.PropertyToID("_GaussSamples");
+            private static readonly int MaskTextureId = Shader.PropertyToID("_MaskTexture");
+            private static readonly int InitialImageId = Shader.PropertyToID("_InitialImage");
 
             private readonly OutlineSettingsData m_OutlineSettings;
 
@@ -59,6 +54,10 @@ namespace UTools.Outline
                 const string outlinePassName = "Blit Outline Pass";
                 const string horizontalPassName = "Blit Horizontal Blur Pass";
                 const string verticalPassName = "Blit Vertical Blur Final Pass";
+                
+                const string maskTextureName = "MaskPassResult";
+                const string tempTextureAName = "TempTextureA";
+                const string tempTextureBName = "TempTextureB";
 
                 var resourceData = frameData.Get<UniversalResourceData>();
 
@@ -67,107 +66,115 @@ namespace UTools.Outline
                 var renderTextureDesc = cameraData.cameraTargetDescriptor;
                 renderTextureDesc.depthBufferBits = 0;
 
-                var maskTexture = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, "MaskPassResult", false);
-                var tempTextureA = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, "TempTextureA", false);
-                var tempTextureB = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, "TempTextureB", false);
+                var maskTexture = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, maskTextureName, false);
+                var tempTextureA = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, tempTextureAName, false);
+                var tempTextureB = UniversalRenderer.CreateRenderGraphTexture(renderGraph, renderTextureDesc, tempTextureBName, false);
 
-                //Here we render the mask of our objects.
-                using (var maskBuilder = renderGraph.AddRasterRenderPass<MaskPassData>(maskPassName, out var passData))
+                RenderMask(renderGraph, frameData, maskPassName, maskTexture);
+                RenderOutline(renderGraph, outlinePassName, maskTexture, tempTextureA);
+                RenderHorizontalBlur(renderGraph, horizontalPassName, tempTextureA, tempTextureB);
+                RenderVerticalBlurAndMerge(renderGraph, verticalPassName, tempTextureB, maskTexture, resourceData, tempTextureA);
+                RenderCopyBack(renderGraph, resourceData, tempTextureA);
+            }
+
+            private static void RenderCopyBack(RenderGraph renderGraph, UniversalResourceData resourceData, TextureHandle tempTextureA)
+            {
+                using var blitBuilder = renderGraph.AddRasterRenderPass<PassData>("Copy active color", out var blitPassData);
+                blitBuilder.SetRenderAttachment(resourceData.activeColorTexture, 0);
+                blitPassData.SourceTexture = tempTextureA;
+                blitBuilder.UseTexture(blitPassData.SourceTexture);
+                blitBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    //Prepare render list of affected objects
-                    passData.RenderersList = PrepareRenderList(renderGraph, frameData);
-                    maskBuilder.UseRendererList(passData.RenderersList);
-                    //Prepare the buffer to render this objects to and set render function
-                    maskBuilder.SetRenderAttachment(maskTexture, 0);
-                    maskBuilder.SetRenderFunc(static (MaskPassData data, RasterGraphContext context) => { context.cmd.DrawRendererList(data.RenderersList); });
-                }
+                    Blitter.BlitTexture(context.cmd, data.SourceTexture, new Vector4(1, 1, 0, 0), 0, false);
+                });
+            }
 
-                //here we copy this mask and outline it
-                using (var outlineBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(outlinePassName, out var blitPassData))
+            private void RenderVerticalBlurAndMerge(RenderGraph renderGraph, string verticalPassName, TextureHandle sourceWithPreviousPass, TextureHandle maskTexture,
+                UniversalResourceData resourceData, TextureHandle renderTarget)
+            {
+                using var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<PassData>(verticalPassName, out var horizontalBlurPassData);
+                horizontalBlurPassData.SourceTexture = sourceWithPreviousPass;
+                horizontalBlurPassData.MaskTexture = maskTexture;
+                horizontalBlurPassData.InitialTexture = resourceData.activeColorTexture;
+                horizontalBlurPassData.OutlineSettings = m_OutlineSettings;
+
+                horizontalBlurBuilder.UseTexture(horizontalBlurPassData.SourceTexture);
+                horizontalBlurBuilder.UseTexture(horizontalBlurPassData.MaskTexture);
+                horizontalBlurBuilder.UseTexture(horizontalBlurPassData.InitialTexture);
+                horizontalBlurBuilder.SetRenderAttachment(renderTarget, 0);
+
+                horizontalBlurBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    blitPassData.SourceTexture = maskTexture;
-                    blitPassData.OutlineSettings = m_OutlineSettings;
+                    var settings = data.OutlineSettings;
 
-                    outlineBuilder.SetRenderAttachment(tempTextureA, 0);
-                    outlineBuilder.UseTexture(blitPassData.SourceTexture);
+                    MaterialPropertyBlock.Clear();
+                    MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
+                    MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
+                    MaterialPropertyBlock.SetFloat(BlurWidthId, settings.BlurWidth);
+                    MaterialPropertyBlock.SetFloatArray(GaussSamplesId, settings.GetGaussSamples());
 
-                    outlineBuilder.SetRenderFunc(static (OutlinePassData data, RasterGraphContext context) =>
-                    {
-                        var settings = data.OutlineSettings;
+                    MaterialPropertyBlock.SetTexture(InitialImageId, data.InitialTexture);
+                    MaterialPropertyBlock.SetTexture(MaskTextureId, data.MaskTexture);
+                    MaterialPropertyBlock.SetColor(OutlineColorId, settings.Color);
 
-                        MaterialPropertyBlock.Clear();
-                        MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
-                        MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
-                        MaterialPropertyBlock.SetFloat(OutlineWidth, settings.OutlineWidth);
+                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, 2, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
+                });
+            }
 
-                        context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, 0, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
-                    });
-                }
+            private void RenderHorizontalBlur(RenderGraph renderGraph, string horizontalPassName, TextureHandle tempTextureA, TextureHandle tempTextureB)
+            {
+                using var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<PassData>(horizontalPassName, out var horizontalBlurPassData);
+                horizontalBlurPassData.SourceTexture = tempTextureA;
+                horizontalBlurPassData.OutlineSettings = m_OutlineSettings;
 
-                //here we blur the outline horizontally
-                using (var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(horizontalPassName, out var horizontalBlurPassData))
+                horizontalBlurBuilder.UseTexture(horizontalBlurPassData.SourceTexture);
+                horizontalBlurBuilder.SetRenderAttachment(tempTextureB, 0);
+
+                horizontalBlurBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    horizontalBlurPassData.SourceTexture = tempTextureA;
-                    horizontalBlurPassData.OutlineSettings = m_OutlineSettings;
+                    var settings = data.OutlineSettings;
 
-                    horizontalBlurBuilder.UseTexture(horizontalBlurPassData.SourceTexture);
-                    horizontalBlurBuilder.SetRenderAttachment(tempTextureB, 0);
+                    MaterialPropertyBlock.Clear();
+                    MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
+                    MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
+                    MaterialPropertyBlock.SetFloat(BlurWidthId, settings.BlurWidth);
+                    MaterialPropertyBlock.SetFloatArray(GaussSamplesId, settings.GetGaussSamples());
 
-                    horizontalBlurBuilder.SetRenderFunc(static (OutlinePassData data, RasterGraphContext context) =>
-                    {
-                        var settings = data.OutlineSettings;
+                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, 1, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
+                });
+            }
 
-                        MaterialPropertyBlock.Clear();
-                        MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
-                        MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
-                        MaterialPropertyBlock.SetFloat(BlurWidth, settings.BlurWidth);
-                        MaterialPropertyBlock.SetFloatArray(GaussSamples, settings.GetGaussSamples());
+            private void RenderOutline(RenderGraph renderGraph, string outlinePassName, TextureHandle maskTexture, TextureHandle tempTextureA)
+            {
+                using var outlineBuilder = renderGraph.AddRasterRenderPass<PassData>(outlinePassName, out var blitPassData);
+                blitPassData.SourceTexture = maskTexture;
+                blitPassData.OutlineSettings = m_OutlineSettings;
 
-                        context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, 1, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
-                    });
-                }
+                outlineBuilder.SetRenderAttachment(tempTextureA, 0);
+                outlineBuilder.UseTexture(blitPassData.SourceTexture);
 
-                //here we blur the outline vertically, and return the result
-                using (var horizontalBlurBuilder = renderGraph.AddRasterRenderPass<OutlinePassData>(verticalPassName, out var horizontalBlurPassData))
+                outlineBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    horizontalBlurPassData.SourceTexture = tempTextureB;
-                    horizontalBlurPassData.MaskTexture = maskTexture;
-                    horizontalBlurPassData.InitialTexture = resourceData.activeColorTexture;
-                    horizontalBlurPassData.OutlineSettings = m_OutlineSettings;
+                    var settings = data.OutlineSettings;
 
-                    horizontalBlurBuilder.UseTexture(horizontalBlurPassData.SourceTexture);
-                    horizontalBlurBuilder.UseTexture(horizontalBlurPassData.MaskTexture);
-                    horizontalBlurBuilder.UseTexture(horizontalBlurPassData.InitialTexture);
-                    horizontalBlurBuilder.SetRenderAttachment(tempTextureA, 0);
+                    MaterialPropertyBlock.Clear();
+                    MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
+                    MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
+                    MaterialPropertyBlock.SetFloat(OutlineWidthId, settings.OutlineWidth);
 
-                    horizontalBlurBuilder.SetRenderFunc(static (OutlinePassData data, RasterGraphContext context) =>
-                    {
-                        var settings = data.OutlineSettings;
+                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, 0, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
+                });
+            }
 
-                        MaterialPropertyBlock.Clear();
-                        MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
-                        MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
-                        MaterialPropertyBlock.SetFloat(BlurWidth, settings.BlurWidth);
-                        MaterialPropertyBlock.SetFloatArray(GaussSamples, settings.GetGaussSamples());
-
-                        MaterialPropertyBlock.SetTexture(InitialImage, data.InitialTexture);
-                        MaterialPropertyBlock.SetTexture(MaskTexture, data.MaskTexture);
-                        MaterialPropertyBlock.SetColor(OutlineColor, settings.Color);
-
-                        context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, 2, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
-                    });
-                }
-
-                using (var blitBuilder = renderGraph.AddRasterRenderPass<BlitPassData>("Copy active color", out var blitPassData))
-                {
-                    blitBuilder.SetRenderAttachment(resourceData.activeColorTexture, 0);
-                    blitPassData.SourceTexture = tempTextureA;
-                    blitBuilder.UseTexture(blitPassData.SourceTexture);
-                    blitBuilder.SetRenderFunc(static (BlitPassData data, RasterGraphContext context) =>
-                    {
-                        Blitter.BlitTexture(context.cmd, data.SourceTexture, new Vector4(1, 1, 0, 0), 0, false);
-                    });
-                }
+            private void RenderMask(RenderGraph renderGraph, ContextContainer frameData, string maskPassName, TextureHandle maskTexture)
+            {
+                using var maskBuilder = renderGraph.AddRasterRenderPass<PassData>(maskPassName, out var passData);
+                //Prepare render list of affected objects
+                passData.RenderersList = PrepareRenderList(renderGraph, frameData);
+                maskBuilder.UseRendererList(passData.RenderersList);
+                //Prepare the buffer to render this objects to and set render function
+                maskBuilder.SetRenderAttachment(maskTexture, 0);
+                maskBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) => { context.cmd.DrawRendererList(data.RenderersList); });
             }
 
             private RendererListHandle PrepareRenderList(RenderGraph renderGraph, ContextContainer frameData)
