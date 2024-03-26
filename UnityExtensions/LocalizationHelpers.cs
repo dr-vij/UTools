@@ -1,10 +1,11 @@
 using System;
+using UnityEngine.Localization;
 
 namespace UTools
 {
-    public class LocalizationHelpers
+    public static class LocalizationHelpers
     {
-        public IDisposable SubscribeLocalizedString(LocalizedString localizedString, LocalizedString.ChangeHandler handler)
+        public static IDisposable Subscribe(this LocalizedString localizedString, LocalizedString.ChangeHandler handler)
         {
             localizedString.StringChanged += handler;
             return new DisposeAction(() => localizedString.StringChanged -= handler);
