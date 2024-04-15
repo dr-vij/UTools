@@ -8,7 +8,7 @@ namespace UTools.Input
     /// <summary>
     /// Interaction object. it is used for all interaction subscriptions
     /// </summary>
-    public abstract class InteractionObjectBase : DisposableMonobehaviour
+    public abstract class InteractionObjectBase : DisposableMonoBehaviour
     {
         private readonly Dictionary<InteractionEvent, List<InteractionSubscribtion>> m_AllSubscriptions = new();
 

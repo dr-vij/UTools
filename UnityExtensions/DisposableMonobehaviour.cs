@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UTools
 {
-    public class DisposableMonobehaviour : MonoBehaviour, IDisposableObject
+    public class DisposableMonoBehaviour : MonoBehaviour, IDisposableObject
     {
         /// <summary>
         /// Variable can be used if you want to check if object hase been disdosed or destroyed
@@ -37,21 +37,34 @@ namespace UTools
                 OnDispose();
                 Disposed?.Invoke();
                 Disposed = null;
-            }
 
-            if (this != null)
-                Destroy(gameObject);
+                if (this != null)
+                {
+#if UNITY_EDITOR
+                    if (Application.isPlaying)
+                        Destroy(gameObject);
+                    else
+                        DestroyImmediate(gameObject);
+#else
+                    Destroy(gameObject);
+#endif
+                }
+            }
         }
 
         /// <summary>
         /// Use this method for object initialization
         /// </summary>
-        protected virtual void OnAwake() { }
+        protected virtual void OnAwake()
+        {
+        }
 
         /// <summary>
         /// Use this method for object deinitialization
         /// </summary>
-        protected virtual void OnDispose() { }
+        protected virtual void OnDispose()
+        {
+        }
 
         private void OnDestroy() => Dispose();
     }
