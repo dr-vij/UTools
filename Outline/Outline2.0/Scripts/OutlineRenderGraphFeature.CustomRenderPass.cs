@@ -174,7 +174,11 @@ namespace UTools.Outline
                 maskBuilder.UseRendererList(passData.RenderersList);
                 //Prepare the buffer to render this objects to and set render function
                 maskBuilder.SetRenderAttachment(maskTexture, 0);
-                maskBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) => { context.cmd.DrawRendererList(data.RenderersList); });
+                maskBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
+                {
+                    context.cmd.ClearRenderTarget(true, true, Color.clear);
+                    context.cmd.DrawRendererList(data.RenderersList);
+                });
             }
 
             private RendererListHandle PrepareRenderList(RenderGraph renderGraph, ContextContainer frameData)
