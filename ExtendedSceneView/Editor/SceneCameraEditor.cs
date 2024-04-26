@@ -41,7 +41,7 @@ namespace UTools.Editor
         private double m_ZoomStartedTime;
         private double m_ZoomTime = 1f;
 
-        [MenuItem("ViJTools/SceneView Camera Extension")]
+        [MenuItem("Tools/UTools/SceneView Camera Extension")]
         public static void ShowWindow()
         {
             GetWindow<SceneCameraEditor>("SceneView Settings").Show();
