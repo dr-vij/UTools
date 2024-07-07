@@ -9,6 +9,8 @@ namespace UTools.Input
 {
     public class InputManager : SingletonMonoBehaviour<InputManager>
     {
+        public delegate void ScrollHandler(Vector2 scrollDelta, Vector2 pointerPosition);
+        
         /// <summary>
         /// This parameters determines how far should drag perform to start drag. If distance is less, press will be performed
         /// </summary>
@@ -23,7 +25,15 @@ namespace UTools.Input
         private InputDevice m_ActiveDevice;
         private bool m_IsMouseOrPenInputStarted;
         private readonly GesturesContainer m_GesturesContainer = new();
+        private Action<int> m_MouseDownEvent;
+        private Action<int> m_MouseUpEvent;
         private event ScrollHandler m_GlobalScrollEvent;
+
+        private Vector2 m_MousePosition;
+
+        private readonly HashSet<int> m_PressedButtons = new();
+
+        public int PressedButtonsCount => m_PressedButtons.Count;
 
         public CameraTracer CameraTracer => m_CameraTracer;
 
@@ -48,8 +58,18 @@ namespace UTools.Input
                 Debug.LogWarning("Camera already registered");
             }
         }
-        
-        public delegate void ScrollHandler(Vector2 scrollDelta, Vector2 pointerPosition);
+
+        public IDisposable SubscribeGlobalMouseDown(Action<int> btnDownHandler)
+        {
+            m_MouseDownEvent += btnDownHandler;
+            return new DisposeAction(() => m_MouseDownEvent -= btnDownHandler);
+        }
+
+        public IDisposable SubscribeGlobalMouseUp(Action<int> btnUpHandler)
+        {
+            m_MouseUpEvent += btnUpHandler;
+            return new DisposeAction(() => m_MouseUpEvent -= btnUpHandler);
+        }
 
         public IDisposable SubscribeGlobalScrollDelta(ScrollHandler scrollHandler)
         {
@@ -108,9 +128,6 @@ namespace UTools.Input
 
         #region Mouse Gestures
 
-        private Vector2 m_MousePosition;
-        private readonly HashSet<int> m_PressedButtons = new();
-
         private void OnLeftMouseButtonDownEvent(InputAction.CallbackContext context) =>
             OnMouseDownPerformed(context, Helpers.LeftMouseInputId);
 
@@ -150,6 +167,8 @@ namespace UTools.Input
                 mouseGestureAnalyzer.UpdateMousePosition(m_MousePosition);
                 mouseGestureAnalyzer.MouseButtonDown(buttonIndex);
             }
+
+            m_MouseDownEvent?.Invoke(buttonIndex);
         }
 
         private void OnMouseUpPerformed(InputAction.CallbackContext context, int buttonIndex)
@@ -167,6 +186,7 @@ namespace UTools.Input
                 mouseAnalyzer.MouseButtonUp(buttonIndex);
 
             m_GesturesContainer.RemoveUnusedGestures();
+            m_MouseUpEvent?.Invoke(buttonIndex);
         }
 
         private void OnMouseScrollEvent(InputAction.CallbackContext context)
