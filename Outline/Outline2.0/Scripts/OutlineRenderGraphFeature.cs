@@ -1,3 +1,4 @@
+#if OUTLINE_URP
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -33,3 +34,4 @@ namespace UTools.Outline
         }
     }
 }
+#endif

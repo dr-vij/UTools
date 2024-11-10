@@ -1,3 +1,5 @@
+
+#if OUTLINE_URP
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -199,3 +201,5 @@ namespace UTools.Outline
         }
     }
 }
+
+#endif
