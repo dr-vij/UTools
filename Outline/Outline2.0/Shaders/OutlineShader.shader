@@ -124,7 +124,9 @@ Shader "Hidden/OutlineShader"
             float4 color = SAMPLE_TEXTURE2D_X(_InitialImage, sampler_InitialImage, uv);
             float glowMask = min(mask, intensity * _OutlineColor.a);
             float4 result = lerp(color, _OutlineColor, glowMask);
-            return float4(result.rgb, 1);
+            // Keep the interpolated alpha: forcing 1 here would overwrite the camera
+            // colour alpha and break transparent output.
+            return result;
         }
         ENDHLSL
 
