@@ -12,7 +12,7 @@ namespace UTools
             {
                 if (((object)m_Instance) == null)
                 {
-                    var instances = FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    var instances = FindObjectsByType<T>(FindObjectsInactive.Include);
                     if (instances.Length == 0)
                         Debug.LogError("Singleton object was not found");
                     else if (instances.Length > 1)
