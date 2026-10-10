@@ -11,7 +11,7 @@ namespace UTools.Input
     public abstract class InteractionObjectBase : DisposableMonoBehaviour
     {
         //An array is replaced, never changed, on subscribe and unsubscribe: a handler may do either while the event runs.
-        private readonly Dictionary<InteractionEvent, InteractionSubscribtion[]> m_AllSubscriptions = new();
+        private readonly Dictionary<InteractionEvent, InteractionSubscription[]> m_AllSubscriptions = new();
 
         /// <summary>
         /// The object lies over others: a gesture it does not take is offered to the interaction object beneath it.
@@ -48,7 +48,7 @@ namespace UTools.Input
             where TEventArgs : InteractionEventArgs
         {
             handler ??= (_, _) => { };
-            var subscription = new InteractionSubscribtion<TEventArgs>(handler, handleEvent, ignoreHandled, button, kind);
+            var subscription = new InteractionSubscription<TEventArgs>(handler, handleEvent, ignoreHandled, button, kind);
             AddSubscription(evt, subscription);
             return new DisposeAction(() => RemoveSubscription(evt, subscription));
         }
@@ -91,18 +91,18 @@ namespace UTools.Input
             }
         }
 
-        private void AddSubscription(InteractionEvent evt, InteractionSubscribtion subscription)
+        private void AddSubscription(InteractionEvent evt, InteractionSubscription subscription)
         {
             m_AllSubscriptions.TryGetValue(evt, out var subscriptions);
             var count = subscriptions?.Length ?? 0;
-            var extended = new InteractionSubscribtion[count + 1];
+            var extended = new InteractionSubscription[count + 1];
             if (count != 0)
                 Array.Copy(subscriptions, extended, count);
             extended[count] = subscription;
             m_AllSubscriptions[evt] = extended;
         }
 
-        private void RemoveSubscription(InteractionEvent evt, InteractionSubscribtion subscription)
+        private void RemoveSubscription(InteractionEvent evt, InteractionSubscription subscription)
         {
             if (!m_AllSubscriptions.TryGetValue(evt, out var subscriptions))
                 return;
@@ -111,7 +111,7 @@ namespace UTools.Input
             if (index < 0)
                 return;
 
-            var reduced = new InteractionSubscribtion[subscriptions.Length - 1];
+            var reduced = new InteractionSubscription[subscriptions.Length - 1];
             Array.Copy(subscriptions, 0, reduced, 0, index);
             Array.Copy(subscriptions, index + 1, reduced, index, reduced.Length - index);
             m_AllSubscriptions[evt] = reduced;

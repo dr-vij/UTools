@@ -5,7 +5,7 @@ namespace UTools.Input
     /// <summary>
     /// One handler of an interaction event on an interaction object, and how it takes part in handling the event.
     /// </summary>
-    public abstract class InteractionSubscribtion
+    public abstract class InteractionSubscription
     {
         public readonly bool HandleEvents;
         public readonly bool IgnoreHandled;
@@ -14,7 +14,7 @@ namespace UTools.Input
         private readonly PointerButton? m_Button;
         private readonly PointerKind? m_Kind;
 
-        protected InteractionSubscribtion(bool handleEvents, bool ignoreHandled, PointerButton? button, PointerKind? kind)
+        protected InteractionSubscription(bool handleEvents, bool ignoreHandled, PointerButton? button, PointerKind? kind)
         {
             HandleEvents = handleEvents;
             IgnoreHandled = ignoreHandled;
@@ -41,11 +41,11 @@ namespace UTools.Input
         protected abstract bool IsOfHandlerType(InteractionEventArgs args);
     }
 
-    public sealed class InteractionSubscribtion<TEventArgs> : InteractionSubscribtion where TEventArgs : InteractionEventArgs
+    public sealed class InteractionSubscription<TEventArgs> : InteractionSubscription where TEventArgs : InteractionEventArgs
     {
         private readonly EventHandler<TEventArgs> m_Handler;
 
-        public InteractionSubscribtion(EventHandler<TEventArgs> handler, bool handleEvents, bool ignoreHandled, PointerButton? button, PointerKind? kind) :
+        public InteractionSubscription(EventHandler<TEventArgs> handler, bool handleEvents, bool ignoreHandled, PointerButton? button, PointerKind? kind) :
             base(handleEvents, ignoreHandled, button, kind)
         {
             m_Handler = handler;

@@ -33,7 +33,7 @@ public class TestObject : MonoBehaviour
             m_InteractionObj.SubscribePointerPressEvent(OnPress);
 
         if (m_SubscribeScale)
-            m_InteractionObj.SubscribeTwoPointersDragEnvent(OnTwoPointersDragStart, OnTwoPointersDrag, OnTwoPointersDragEnd);
+            m_InteractionObj.SubscribeTwoPointersDragEvent(OnTwoPointersDragStart, OnTwoPointersDrag, OnTwoPointersDragEnd);
 
         m_Renderer = GetComponent<Renderer>();
     }

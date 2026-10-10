@@ -319,7 +319,7 @@ namespace UTools.Input
         /// <param name="handleEvents"></param>
         /// <param name="ignoreHandled"></param>
         /// <returns></returns>
-        public static IDisposable SubscribeTwoPointersDragEnvent(this InteractionObjectBase interactionObjectBase,
+        public static IDisposable SubscribeTwoPointersDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragStartHandler,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragPerformHandler,
             EventHandler<TwoPointersDragInteractionEventArgs> twoPointersDragEndHandler,
