@@ -8,7 +8,6 @@ public class TestObject : MonoBehaviour
 {
     [SerializeField] private bool m_SubscribeDrag = true;
     [SerializeField] private bool m_SubscribePress = true;
-    [SerializeField] private bool m_SubscribeMove = true;
     [SerializeField] private bool m_SubscribeGrab = true;
     [SerializeField] private bool m_SubscribeScale = true;
 
@@ -19,7 +18,6 @@ public class TestObject : MonoBehaviour
     private Plane m_Plane;
     private Vector3 m_InitialPoint;
     private Vector3 m_InitialPosition;
-    private bool m_IsGrabbed = false;
 
     private void Awake()
     {
@@ -34,25 +32,10 @@ public class TestObject : MonoBehaviour
         if (m_SubscribePress)
             m_InteractionObj.SubscribePointerPressEvent(OnPress);
 
-        if (m_SubscribeMove)
-            m_InteractionObj.SubscribePointerMoveEvent(OnPointerMove);
-
         if (m_SubscribeScale)
             m_InteractionObj.SubscribeTwoPointersDragEnvent(OnTwoPointersDragStart, OnTwoPointersDrag, OnTwoPointersDragEnd);
 
         m_Renderer = GetComponent<Renderer>();
-    }
-
-    private void OnPointerMove(object sender, PointerInteractionEventArgs args)
-    {
-        if (!m_IsGrabbed)
-        {
-            var sph = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            var pos = (Vector3)args.PointerPosition;
-            pos.z = 5;
-            sph.transform.position = Camera.main.ScreenToWorldPoint(pos);
-            sph.transform.localScale = Vector3.one * 0.05f;
-        }
     }
 
     private void OnPress(object sender, PointerInteractionEventArgs args)
@@ -99,13 +82,11 @@ public class TestObject : MonoBehaviour
     {
         m_WasScaled = false;
         m_InitialScale = transform.localScale;
-        m_IsGrabbed = true;
         transform.localScale = m_InitialScale * 1.05f;
     }
 
     private void OnGrabEnd(object sender, PointerInteractionEventArgs args)
     {
-        m_IsGrabbed = false;
         if (!m_WasScaled)
             transform.localScale = m_InitialScale;
     }
@@ -116,8 +97,8 @@ public class TestObject : MonoBehaviour
     {
         //Object scale:
         m_WasScaled = true;
-        var disBefore = Vector2.Distance(args.PointerPrevPosition, args.SecondaryPointerPosition);
-        var after = Vector2.Distance(args.PointerPosition, args.SecondaryPointerPrevPosition);
+        var disBefore = Vector2.Distance(args.PointerPrevPosition, args.SecondaryPointerPrevPosition);
+        var after = Vector2.Distance(args.PointerPosition, args.SecondaryPointerPosition);
         var ratio = after / disBefore;
         transform.localScale *= ratio;
     }

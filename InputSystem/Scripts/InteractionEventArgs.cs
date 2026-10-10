@@ -46,6 +46,17 @@ namespace UTools.Input
     {
         public Vector2 PointerPosition { get; private set; }
 
+        /// <summary>
+        /// The pointer the event comes from: its kind, its button, its pose in the world. Null for an event run by hand.
+        /// </summary>
+        public InteractionPointer Pointer { get; internal set; }
+
+        /// <summary>
+        /// Where the pointer met the object the event is run on, when it went down. Null on the fallback receiver of
+        /// the pointer and for an event run by hand.
+        /// </summary>
+        public Vector3? HitPoint { get; internal set; }
+
         public PointerInteractionEventArgs(Vector2 position, Camera camera) : base(camera) => PointerPosition = position;
     }
 
@@ -85,8 +96,8 @@ namespace UTools.Input
         public TwoPointersDragInteractionEventArgs(Vector2 position, Vector2 prevPosition, Vector2 positionPointer2, Vector2 prevPositionPointer2, Camera camera) :
             base(position, prevPosition, camera)
         {
-            SecondaryPointerPrevPosition = positionPointer2;
-            SecondaryPointerPosition = prevPositionPointer2;
+            SecondaryPointerPosition = positionPointer2;
+            SecondaryPointerPrevPosition = prevPositionPointer2;
         }
     }
 }

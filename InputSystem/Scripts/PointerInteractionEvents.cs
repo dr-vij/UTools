@@ -12,11 +12,6 @@ namespace UTools.Input
         public static readonly InteractionEvent PointerPressEvent = new();
 
         /// <summary>
-        /// Raised when user moves pointer over object
-        /// </summary>
-        public static readonly InteractionEvent PointerMoveEvent = new();
-
-        /// <summary>
         /// Raised when user starts dragging object
         /// </summary>
         public static readonly InteractionEvent PointerDragStartEvent = new();
@@ -45,6 +40,16 @@ namespace UTools.Input
         /// Raised when user stops drag with two pointers (remove or add pointer)
         /// </summary>
         public static readonly InteractionEvent TwoPointersDragEndEvent = new();
+
+        /// <summary>
+        /// Raised when the first pointer comes over the object, pressed or not
+        /// </summary>
+        public static readonly InteractionEvent PointerEnterEvent = new();
+
+        /// <summary>
+        /// Raised when the last pointer over the object leaves it
+        /// </summary>
+        public static readonly InteractionEvent PointerExitEvent = new();
 
         /// <summary>
         /// Called when pointer is down on object

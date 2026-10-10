@@ -10,46 +10,72 @@ namespace UTools.Input
     /// </summary>
     public abstract class InteractionObjectBase : DisposableMonoBehaviour
     {
-        private readonly Dictionary<InteractionEvent, List<InteractionSubscribtion>> m_AllSubscriptions = new();
+        //An array is replaced, never changed, on subscribe and unsubscribe: a handler may do either while the event runs.
+        private readonly Dictionary<InteractionEvent, InteractionSubscribtion[]> m_AllSubscriptions = new();
 
-        public abstract IGestureAnalyzer CreateAnalyzer(Camera cam);
+        /// <summary>
+        /// The object lies over others: a gesture it does not take is offered to the interaction object beneath it.
+        /// Without the mark an untaken gesture goes straight to the fallback receiver of the pointer.
+        /// </summary>
+        public bool PassesGesturesBeneath { get; set; }
+
+        /// <summary>
+        /// The object is a control that does not need the whole of the input to itself: while it holds a pointer, a
+        /// source that leads one gesture at a time may still lead pointers to other such objects. Read by the rule a
+        /// source admits pointers by, not by the recognizer.
+        /// </summary>
+        public bool AllowsConcurrentGestures { get; set; }
 
         public bool HasEventSubscription(InteractionEvent evt)
         {
-            return m_AllSubscriptions.TryGetValue(evt, out var subscriptions) && subscriptions.Count != 0;
-        }
-
-        public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false)
-            where TEventArgs : InteractionEventArgs
-        {
-            handler ??= (_, _) => { };
-            AddSubscription(evt, handler, handleEvent, ignoreHandled);
-            return new DisposeAction(() => RemoveSubscription(evt, handler));
+            return m_AllSubscriptions.TryGetValue(evt, out var subscriptions) && subscriptions.Length != 0;
         }
 
         /// <summary>
-        /// Runs event on object if he has such subscription and if it can run it (handle condition/subscription check)
+        /// Subscribes to the event of the pointers with the primary button, of any kind.
+        /// </summary>
+        public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false)
+            where TEventArgs : InteractionEventArgs
+        {
+            return Subscribe(evt, handler, PointerButton.Primary, null, handleEvent, ignoreHandled);
+        }
+
+        /// <summary>
+        /// Subscribes to the event of the pointers with the given button and of the given kind; null is any.
+        /// </summary>
+        public IDisposable Subscribe<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, PointerButton? button, PointerKind? kind,
+            bool handleEvent = true, bool ignoreHandled = false)
+            where TEventArgs : InteractionEventArgs
+        {
+            handler ??= (_, _) => { };
+            var subscription = new InteractionSubscribtion<TEventArgs>(handler, handleEvent, ignoreHandled, button, kind);
+            AddSubscription(evt, subscription);
+            return new DisposeAction(() => RemoveSubscription(evt, subscription));
+        }
+
+        /// <summary>
+        /// Runs the event on the handlers of this object: those the args are for, in the order they subscribed, each
+        /// unless the event is handled already or the handler ignores that. Where an unhandled event goes next is for
+        /// the caller to decide.
         /// </summary>
         /// <param name="evt"></param>
         /// <param name="args"></param>
         public void RunEvent(InteractionEvent evt, InteractionEventArgs args)
         {
-            if (m_AllSubscriptions.TryGetValue(evt, out var handlers))
-            {
-                foreach (var handler in handlers)
-                {
-                    if (!args.IsHandled || handler.IgnoreHandled)
-                    {
-                        if (handler.HandleEvents)
-                            args.Handle(this);
-                        handler.Handler.DynamicInvoke(this, args);
-                    }
-                }
-            }
+            if (!m_AllSubscriptions.TryGetValue(evt, out var subscriptions))
+                return;
 
-            if (args.InteractionCamera.TryGetComponent<InteractionObjectBase>(out var cameraInteractionObject) && cameraInteractionObject != this)
+            foreach (var subscription in subscriptions)
             {
-                cameraInteractionObject.RunEvent(evt, args);
+                if (!subscription.Accepts(args))
+                    continue;
+
+                if (!args.IsHandled || subscription.IgnoreHandled)
+                {
+                    if (subscription.HandleEvents)
+                        args.Handle(this);
+                    subscription.Invoke(this, args);
+                }
             }
         }
 
@@ -65,22 +91,30 @@ namespace UTools.Input
             }
         }
 
-        private void AddSubscription<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler, bool handleEvent = true, bool ignoreHandled = false)
-            where TEventArgs : InteractionEventArgs
+        private void AddSubscription(InteractionEvent evt, InteractionSubscribtion subscription)
         {
-            if (!m_AllSubscriptions.TryGetValue(evt, out var subscriptions))
-            {
-                subscriptions = new List<InteractionSubscribtion>();
-                m_AllSubscriptions.Add(evt, subscriptions);
-            }
-
-            subscriptions.Add(new InteractionSubscribtion(handler, handleEvent, ignoreHandled));
+            m_AllSubscriptions.TryGetValue(evt, out var subscriptions);
+            var count = subscriptions?.Length ?? 0;
+            var extended = new InteractionSubscribtion[count + 1];
+            if (count != 0)
+                Array.Copy(subscriptions, extended, count);
+            extended[count] = subscription;
+            m_AllSubscriptions[evt] = extended;
         }
 
-        private void RemoveSubscription<TEventArgs>(InteractionEvent evt, EventHandler<TEventArgs> handler) where TEventArgs : InteractionEventArgs
+        private void RemoveSubscription(InteractionEvent evt, InteractionSubscribtion subscription)
         {
-            if (m_AllSubscriptions.TryGetValue(evt, out var subscriptions))
-                subscriptions.RemoveAll((subscription) => subscription.Handler == (Delegate)handler);
+            if (!m_AllSubscriptions.TryGetValue(evt, out var subscriptions))
+                return;
+
+            var index = Array.IndexOf(subscriptions, subscription);
+            if (index < 0)
+                return;
+
+            var reduced = new InteractionSubscribtion[subscriptions.Length - 1];
+            Array.Copy(subscriptions, 0, reduced, 0, index);
+            Array.Copy(subscriptions, index + 1, reduced, index, reduced.Length - index);
+            m_AllSubscriptions[evt] = reduced;
         }
     }
 }

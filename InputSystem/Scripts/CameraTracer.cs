@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -12,10 +11,17 @@ namespace UTools.Input
     {
         private static readonly IComparer<RaycastHit> HitDistanceComparer = new FuncComparer<RaycastHit>((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
+        //Hits closer to each other than this are at one distance: which of them comes first is not left to rounding.
+        private const float TieDistance = 1e-5f;
+
         private RaycastHit[] m_Hits;
         private int m_CurrentHitCount;
         private int m_RaycastCapacity;
         private List<RaycastResult> m_RaycastResults = new();
+        private PointerEventData m_EventData;
+        private EventSystem m_EventDataSystem;
+        private readonly List<PointerHit> m_Traced = new();
+        private readonly List<float> m_Distances = new();
 
         public int RaycastCapacity
         {
@@ -50,12 +56,53 @@ namespace UTools.Input
         /// <returns></returns>
         public bool TryTraceInteractionObject(Camera camera, Vector2 position, out InteractionObjectBase result)
         {
+            TraceInteractionObjects(camera, position, m_Traced);
+            result = m_Traced.Count != 0 ? m_Traced[0].Target : null;
+            return result != null;
+        }
+
+        /// <summary>
+        /// Searches all interaction objects under position, the nearest to camera first, each of them once, with the
+        /// point where the ray met it. Of two objects met at one distance, a child comes before its parent.
+        /// </summary>
+        /// <param name="camera"></param>
+        /// <param name="position"></param>
+        /// <param name="results">Is cleared first</param>
+        public void TraceInteractionObjects(Camera camera, Vector2 position, List<PointerHit> results)
+        {
+            results.Clear();
+            m_Distances.Clear();
             TraceCamera3D(position, camera);
             for (int i = 0; i < m_CurrentHitCount; i++)
-                if (!m_Hits[i].collider.transform.HasInteractionIgnorer() && m_Hits[i].collider.transform.TryFindInteractionObject(out result))
-                    return true;
+            {
+                var hit = m_Hits[i];
+                if (hit.collider.transform.HasInteractionIgnorer() || !hit.collider.transform.TryFindInteractionObject(out var interactionObject))
+                    continue;
+                if (Contains(results, interactionObject))
+                    continue;
 
-            result = null;
+                results.Add(new PointerHit(interactionObject, hit.point));
+                m_Distances.Add(hit.distance);
+            }
+
+            for (int i = 1; i < results.Count; i++)
+            {
+                if (m_Distances[i] - m_Distances[i - 1] > TieDistance || !results[i].Target.transform.IsChildOf(results[i - 1].Target.transform))
+                    continue;
+
+                (results[i - 1], results[i]) = (results[i], results[i - 1]);
+                (m_Distances[i - 1], m_Distances[i]) = (m_Distances[i], m_Distances[i - 1]);
+            }
+        }
+
+        private static bool Contains(List<PointerHit> hits, InteractionObjectBase interactionObject)
+        {
+            foreach (var hit in hits)
+            {
+                if (hit.Target == interactionObject)
+                    return true;
+            }
+
             return false;
         }
 
@@ -66,13 +113,27 @@ namespace UTools.Input
         /// <returns></returns>
         public bool IsOverUI(Vector2 pos)
         {
+            var eventSystem = EventSystem.current;
+            if (eventSystem == null)
+                return false;
+
             var mask = LayerSettings.RaycastMask & ~Physics.IgnoreRaycastLayer;
-            var eventData = new PointerEventData(EventSystem.current) { position = pos };
+            if (m_EventData == null || m_EventDataSystem != eventSystem)
+            {
+                m_EventData = new PointerEventData(eventSystem);
+                m_EventDataSystem = eventSystem;
+            }
+
+            m_EventData.position = pos;
             m_RaycastResults.Clear();
-            EventSystem.current.RaycastAll(eventData, m_RaycastResults);
-            var result = m_RaycastResults.Count != 0 && m_RaycastResults.Any(c => (1 << c.gameObject.layer & mask) != 0 && c.module is GraphicRaycaster or PanelRaycaster);
-            // Debug.Log( $"IsOverUI: {result}");
-            return result;
+            eventSystem.RaycastAll(m_EventData, m_RaycastResults);
+            foreach (var result in m_RaycastResults)
+            {
+                if ((1 << result.gameObject.layer & mask) != 0 && result.module is GraphicRaycaster or PanelRaycaster)
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>

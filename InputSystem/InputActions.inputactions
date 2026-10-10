@@ -15,15 +15,6 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "MouseLeft",
-                    "type": "Button",
-                    "id": "9163672d-d3b2-49a5-9544-5d96a4a90147",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
                     "name": "MouseRight",
                     "type": "Button",
                     "id": "9a0b9697-3395-4527-abfd-24e582412d25",
@@ -43,7 +34,7 @@
                 },
                 {
                     "name": "MousePosition",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "71cb9f8e-b05f-4d12-b735-556e6b242fc9",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -841,17 +832,6 @@
                     "action": "Pointer",
                     "isComposite": false,
                     "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "c8c43c05-7976-4d85-bdaf-2a1ca13bb591",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MouseLeft",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 },
                 {
                     "name": "",

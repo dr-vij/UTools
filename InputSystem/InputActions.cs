@@ -105,16 +105,6 @@ namespace UTools.Input
                     ""priority"": 0
                 },
                 {
-                    ""name"": ""MouseLeft"",
-                    ""type"": ""Button"",
-                    ""id"": ""9163672d-d3b2-49a5-9544-5d96a4a90147"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true,
-                    ""priority"": 0
-                },
-                {
                     ""name"": ""MouseRight"",
                     ""type"": ""Button"",
                     ""id"": ""9a0b9697-3395-4527-abfd-24e582412d25"",
@@ -136,7 +126,7 @@ namespace UTools.Input
                 },
                 {
                     ""name"": ""MousePosition"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""71cb9f8e-b05f-4d12-b735-556e6b242fc9"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
@@ -939,17 +929,6 @@ namespace UTools.Input
                 },
                 {
                     ""name"": """",
-                    ""id"": ""c8c43c05-7976-4d85-bdaf-2a1ca13bb591"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseLeft"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""47fab4b6-ed87-43ae-9dee-2684ceefd97c"",
                     ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
@@ -1000,7 +979,6 @@ namespace UTools.Input
             // GestureActions
             m_GestureActions = asset.FindActionMap("GestureActions", throwIfNotFound: true);
             m_GestureActions_Pointer = m_GestureActions.FindAction("Pointer", throwIfNotFound: true);
-            m_GestureActions_MouseLeft = m_GestureActions.FindAction("MouseLeft", throwIfNotFound: true);
             m_GestureActions_MouseRight = m_GestureActions.FindAction("MouseRight", throwIfNotFound: true);
             m_GestureActions_MouseMiddle = m_GestureActions.FindAction("MouseMiddle", throwIfNotFound: true);
             m_GestureActions_MousePosition = m_GestureActions.FindAction("MousePosition", throwIfNotFound: true);
@@ -1086,7 +1064,6 @@ namespace UTools.Input
         private readonly InputActionMap m_GestureActions;
         private List<IGestureActionsActions> m_GestureActionsActionsCallbackInterfaces = new List<IGestureActionsActions>();
         private readonly InputAction m_GestureActions_Pointer;
-        private readonly InputAction m_GestureActions_MouseLeft;
         private readonly InputAction m_GestureActions_MouseRight;
         private readonly InputAction m_GestureActions_MouseMiddle;
         private readonly InputAction m_GestureActions_MousePosition;
@@ -1106,10 +1083,6 @@ namespace UTools.Input
             /// Provides access to the underlying input action "GestureActions/Pointer".
             /// </summary>
             public InputAction @Pointer => m_Wrapper.m_GestureActions_Pointer;
-            /// <summary>
-            /// Provides access to the underlying input action "GestureActions/MouseLeft".
-            /// </summary>
-            public InputAction @MouseLeft => m_Wrapper.m_GestureActions_MouseLeft;
             /// <summary>
             /// Provides access to the underlying input action "GestureActions/MouseRight".
             /// </summary>
@@ -1155,9 +1128,6 @@ namespace UTools.Input
                 @Pointer.started += instance.OnPointer;
                 @Pointer.performed += instance.OnPointer;
                 @Pointer.canceled += instance.OnPointer;
-                @MouseLeft.started += instance.OnMouseLeft;
-                @MouseLeft.performed += instance.OnMouseLeft;
-                @MouseLeft.canceled += instance.OnMouseLeft;
                 @MouseRight.started += instance.OnMouseRight;
                 @MouseRight.performed += instance.OnMouseRight;
                 @MouseRight.canceled += instance.OnMouseRight;
@@ -1184,9 +1154,6 @@ namespace UTools.Input
                 @Pointer.started -= instance.OnPointer;
                 @Pointer.performed -= instance.OnPointer;
                 @Pointer.canceled -= instance.OnPointer;
-                @MouseLeft.started -= instance.OnMouseLeft;
-                @MouseLeft.performed -= instance.OnMouseLeft;
-                @MouseLeft.canceled -= instance.OnMouseLeft;
                 @MouseRight.started -= instance.OnMouseRight;
                 @MouseRight.performed -= instance.OnMouseRight;
                 @MouseRight.canceled -= instance.OnMouseRight;
@@ -1246,13 +1213,6 @@ namespace UTools.Input
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnPointer(InputAction.CallbackContext context);
-            /// <summary>
-            /// Method invoked when associated input action "MouseLeft" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-            /// </summary>
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnMouseLeft(InputAction.CallbackContext context);
             /// <summary>
             /// Method invoked when associated input action "MouseRight" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>

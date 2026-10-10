@@ -134,19 +134,16 @@ namespace UTools.Input
 
         #region MouseSubscriptions
 
+        //The mouse has no events of its own: its buttons are pointers, and these subscribe to the events of the
+        //pointers of the mouse with the given button, or with any.
+
         public static IDisposable SubscribeMouseGrabEvent(
             this InteractionObjectBase interactionObjectBase,
             EventHandler<MouseInteractionEventArgs> grabStartHandler,
             EventHandler<MouseInteractionEventArgs> grabEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-            });
+            return SubscribeMouseGrab(interactionObjectBase, null, grabStartHandler, grabEndHandler, handleEvents, ignoreHandled);
         }
 
         public static IDisposable SubscribeLeftMouseGrabEvent(
@@ -155,13 +152,7 @@ namespace UTools.Input
             EventHandler<MouseInteractionEventArgs> grabEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-            });
+            return SubscribeMouseGrab(interactionObjectBase, PointerButton.Primary, grabStartHandler, grabEndHandler, handleEvents, ignoreHandled);
         }
 
         public static IDisposable SubscribeRightMouseGrabEvent(
@@ -170,13 +161,7 @@ namespace UTools.Input
             EventHandler<MouseInteractionEventArgs> grabEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-            });
+            return SubscribeMouseGrab(interactionObjectBase, PointerButton.Secondary, grabStartHandler, grabEndHandler, handleEvents, ignoreHandled);
         }
 
         public static IDisposable SubscribeMiddleMouseGrabEvent(
@@ -185,37 +170,34 @@ namespace UTools.Input
             EventHandler<MouseInteractionEventArgs> grabEndHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleGrabEvent, grabStartHandler, handleEvents, ignoreHandled);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleReleaseEvent, grabEndHandler, handleEvents, ignoreHandled);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-            });
+            return SubscribeMouseGrab(interactionObjectBase, PointerButton.Middle, grabStartHandler, grabEndHandler, handleEvents, ignoreHandled);
         }
 
         public static IDisposable SubscribeMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObjectBase.Subscribe(MouseInteractionEvents.MousePressEvent, handler, handleEvents, ignoreHandled);
+            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerPressEvent, handler, null, PointerKind.Mouse, handleEvents, ignoreHandled);
         }
 
         public static IDisposable SubscribeLeftMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftPressEvent, handler, handleEvents, ignoreHandled);
+            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerPressEvent, handler, PointerButton.Primary, PointerKind.Mouse, handleEvents,
+                ignoreHandled);
         }
 
         public static IDisposable SubscribeRightMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightPressEvent, handler, handleEvents, ignoreHandled);
+            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerPressEvent, handler, PointerButton.Secondary, PointerKind.Mouse, handleEvents,
+                ignoreHandled);
         }
 
         public static IDisposable SubscribeMiddleMousePressEvent(this InteractionObjectBase interactionObjectBase, EventHandler<MouseInteractionEventArgs> handler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddlePressEvent, handler, handleEvents, ignoreHandled);
+            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerPressEvent, handler, PointerButton.Middle, PointerKind.Mouse, handleEvents,
+                ignoreHandled);
         }
 
         public static IDisposable SubscribeMouseDragEvent(this InteractionObjectBase interactionObjectBase,
@@ -224,15 +206,7 @@ namespace UTools.Input
             EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
         )
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragPerformEvent, mouseDragHandler);
-            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseDragEndEvent, mouseDragEndHandler);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-                sub3.Dispose();
-            });
+            return SubscribeMouseDrag(interactionObjectBase, null, mouseDragStartHandler, mouseDragHandler, mouseDragEndHandler);
         }
 
         public static IDisposable SubscribeLeftMouseDragEvent(this InteractionObjectBase interactionObjectBase,
@@ -241,43 +215,49 @@ namespace UTools.Input
             EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
         )
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragPerformEvent, mouseDragPerformHandler);
-            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseLeftDragEndEvent, mouseDragEndHandler);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-                sub3.Dispose();
-            });
+            return SubscribeMouseDrag(interactionObjectBase, PointerButton.Primary, mouseDragStartHandler, mouseDragPerformHandler, mouseDragEndHandler);
         }
-        
+
         public static IDisposable SubscribeRightMouseDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragPerformHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
         )
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragPerformEvent, mouseDragPerformHandler);
-            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseRightDragEndEvent, mouseDragEndHandler);
-            return new DisposeAction(() =>
-            {
-                sub1.Dispose();
-                sub2.Dispose();
-                sub3.Dispose();
-            });
+            return SubscribeMouseDrag(interactionObjectBase, PointerButton.Secondary, mouseDragStartHandler, mouseDragPerformHandler, mouseDragEndHandler);
         }
-        
+
         public static IDisposable SubscribeMiddleMouseDragEvent(this InteractionObjectBase interactionObjectBase,
             EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragPerformHandler,
             EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler
         )
         {
-            var sub1 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragStartEvent, mouseDragStartHandler);
-            var sub2 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragPerformEvent, mouseDragPerformHandler);
-            var sub3 = interactionObjectBase.Subscribe(MouseInteractionEvents.MouseMiddleDragEndEvent, mouseDragEndHandler);
+            return SubscribeMouseDrag(interactionObjectBase, PointerButton.Middle, mouseDragStartHandler, mouseDragPerformHandler, mouseDragEndHandler);
+        }
+
+        private static IDisposable SubscribeMouseGrab(InteractionObjectBase interactionObjectBase, PointerButton? button,
+            EventHandler<MouseInteractionEventArgs> grabStartHandler, EventHandler<MouseInteractionEventArgs> grabEndHandler, bool handleEvents,
+            bool ignoreHandled)
+        {
+            var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerGrabEvent, grabStartHandler, button, PointerKind.Mouse, handleEvents,
+                ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerReleaseEvent, grabEndHandler, button, PointerKind.Mouse, handleEvents,
+                ignoreHandled);
+            return new DisposeAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
+        }
+
+        private static IDisposable SubscribeMouseDrag(InteractionObjectBase interactionObjectBase, PointerButton? button,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragStartHandler, EventHandler<MouseDragInteractionEventArgs> mouseDragPerformHandler,
+            EventHandler<MouseDragInteractionEventArgs> mouseDragEndHandler)
+        {
+            var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragStartEvent, mouseDragStartHandler, button, PointerKind.Mouse);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragPerformEvent, mouseDragPerformHandler, button, PointerKind.Mouse);
+            var sub3 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerDragEndEvent, mouseDragEndHandler, button, PointerKind.Mouse);
             return new DisposeAction(() =>
             {
                 sub1.Dispose();
@@ -380,17 +360,25 @@ namespace UTools.Input
         }
 
         /// <summary>
-        /// Unified pointer move subscription
+        /// Pointer hover subscription: the first pointer comes over the object, the last one leaves it
         /// </summary>
         /// <param name="interactionObjectBase"></param>
-        /// <param name="pointerMoveHandler"></param>
+        /// <param name="pointerEnterHandler"></param>
+        /// <param name="pointerExitHandler"></param>
         /// <param name="handleEvents"></param>
         /// <param name="ignoreHandled"></param>
-        public static IDisposable SubscribePointerMoveEvent(this InteractionObjectBase interactionObjectBase,
-            EventHandler<PointerInteractionEventArgs> pointerMoveHandler,
+        public static IDisposable SubscribePointerHoverEvent(this InteractionObjectBase interactionObjectBase,
+            EventHandler<PointerInteractionEventArgs> pointerEnterHandler,
+            EventHandler<PointerInteractionEventArgs> pointerExitHandler,
             bool handleEvents = true, bool ignoreHandled = false)
         {
-            return interactionObjectBase.Subscribe(PointerInteractionEvents.PointerMoveEvent, pointerMoveHandler, handleEvents, ignoreHandled);
+            var sub1 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerEnterEvent, pointerEnterHandler, handleEvents, ignoreHandled);
+            var sub2 = interactionObjectBase.Subscribe(PointerInteractionEvents.PointerExitEvent, pointerExitHandler, handleEvents, ignoreHandled);
+            return new DisposeAction(() =>
+            {
+                sub1.Dispose();
+                sub2.Dispose();
+            });
         }
 
         #endregion
