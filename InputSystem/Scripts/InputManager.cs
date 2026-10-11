@@ -500,7 +500,14 @@ namespace UTools.Input
             //An action is cancelled as a device it is bound to is removed, and nothing of a device that is gone can be
             //read: what it held down ends in OnDeviceChange.
             var device = context.control.device;
-            return device.added && (m_ActiveDevice == null || m_ActiveDevice.GetType() == device.GetType());
+            if (!device.added)
+                return false;
+
+            //A device of another kind holds the input - unless all it holds is a contact that lost its lift: that one
+            //ends here, or it would keep every other kind of device out for good.
+            if (m_ActiveDevice != null && m_ActiveDevice.GetType() != device.GetType())
+                DropStaleContacts();
+            return m_ActiveDevice == null || m_ActiveDevice.GetType() == device.GetType();
         }
 
         #endregion
