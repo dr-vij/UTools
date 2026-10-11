@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace UTools.Input
 {
@@ -165,7 +166,25 @@ namespace UTools.Input
                     m_StaleContacts.Add(pair.Key);
             }
 
-            foreach (var id in m_StaleContacts)
+            Drop(m_StaleContacts);
+        }
+
+        //The contacts of a device that holds nothing from now on, whatever it reads: they end the same way.
+        private void DropContactsOf(InputDevice device)
+        {
+            m_StaleContacts.Clear();
+            foreach (var pair in m_ContactDevices)
+            {
+                if (pair.Value == device)
+                    m_StaleContacts.Add(pair.Key);
+            }
+
+            Drop(m_StaleContacts);
+        }
+
+        private void Drop(List<int> ids)
+        {
+            foreach (var id in ids)
             {
                 var pointer = m_Contacts[id];
                 if (pointer != null)
@@ -259,16 +278,15 @@ namespace UTools.Input
         }
 
         //A mouse hovers wherever it is. A pen hovers only while it is near the screen: one taken away leaves the place
-        //it was last seen at, and nothing is under it there.
+        //it was last seen at, and nothing is under it there. A device that is gone or switched off - the application
+        //has no focus - hovers nothing; switched on again, it hovers where it was.
         private bool TryGetHoverKind(out PointerKind kind)
         {
             kind = m_HoverDevice is Pen ? PointerKind.Pen : PointerKind.Mouse;
-            return m_HoverDevice switch
-            {
-                null => false,
-                Pen pen => pen.added && pen.inRange.isPressed,
-                _ => m_HoverDevice.added,
-            };
+            if (m_HoverDevice == null || !m_HoverDevice.added || !m_HoverDevice.enabled)
+                return false;
+
+            return m_HoverDevice is not Pen pen || pen.inRange.isPressed;
         }
 
         private void StopHovering()
@@ -302,9 +320,11 @@ namespace UTools.Input
             m_Actions = new InputActions();
             m_Actions.GestureActions.Enable();
 
-            //Unified pointer events. mouse left button + pen + touch
+            //Unified pointer events. mouse left button + pen + touch. The action passes every change through, a lift
+            //like a press, and is cancelled only when it is reset - a device of it reset, switched off or removed. That
+            //is no input: a device read then may show a press that is not one, so the cancel is not listened to, and
+            //what such a device held ends in OnDeviceChange.
             m_Actions.GestureActions.Pointer.performed += OnPointerEvent;
-            m_Actions.GestureActions.Pointer.canceled += OnPointerEvent;
 
             //The other two buttons of the mouse are pointers too, and have no contact in the composite
             m_Actions.GestureActions.MouseRight.started += OnRightMouseButtonDownEvent;
@@ -328,7 +348,6 @@ namespace UTools.Input
             m_Actions.Disable();
 
             m_Actions.GestureActions.Pointer.performed -= OnPointerEvent;
-            m_Actions.GestureActions.Pointer.canceled -= OnPointerEvent;
 
             m_Actions.GestureActions.MouseRight.started -= OnRightMouseButtonDownEvent;
             m_Actions.GestureActions.MouseRight.canceled -= OnRightMouseButtonUpEvent;
@@ -342,11 +361,13 @@ namespace UTools.Input
             InputSystem.onDeviceChange -= OnDeviceChange;
         }
 
-        //A device that goes away - unplugged, out of power, out of reach - lifts nothing of what it held down.
+        //A device that is reset, switched off or gone - the application lost the focus, a system window took the
+        //input, the device was unplugged - lifts nothing of what it held down: its contacts end here. The device is
+        //not asked: it may be gone, and one being reset still reads what it read before.
         private void OnDeviceChange(InputDevice device, InputDeviceChange change)
         {
-            if (change == InputDeviceChange.Removed)
-                DropStaleContacts();
+            if (change is InputDeviceChange.Removed or InputDeviceChange.Disabled or InputDeviceChange.SoftReset or InputDeviceChange.HardReset)
+                DropContactsOf(device);
         }
 
         private void OnPointerEvent(InputAction.CallbackContext context)
@@ -468,6 +489,14 @@ namespace UTools.Input
         /// <returns></returns>
         private bool CanBeHandled(InputAction.CallbackContext context)
         {
+#if UNITY_EDITOR
+            //The editor cancels the actions as the focus changes, from an update of its own, where a control reads the
+            //editor's state of the device and not the game's: a button pressed to bring the focus back stays pressed
+            //there.
+            if (InputState.currentUpdateType == InputUpdateType.Editor)
+                return false;
+#endif
+
             //An action is cancelled as a device it is bound to is removed, and nothing of a device that is gone can be
             //read: what it held down ends in OnDeviceChange.
             var device = context.control.device;
