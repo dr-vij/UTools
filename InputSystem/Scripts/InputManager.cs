@@ -153,8 +153,9 @@ namespace UTools.Input
                 m_ActiveDevice = null;
         }
 
-        //A contact whose device no longer holds it lost its lift on the way: it would stay down for ever and turn
-        //every next press into a second pointer. Its gesture ends where it last was, without a press.
+        //A contact whose device no longer holds it lost its lift on the way, and one whose device is gone will never
+        //get it: it would stay down for ever and turn every next press into a second pointer. Its gesture ends where
+        //it last was, without a press.
         private void DropStaleContacts()
         {
             m_StaleContacts.Clear();
@@ -175,6 +176,10 @@ namespace UTools.Input
 
         private bool IsDown(int id, InputDevice device)
         {
+            //A device that is gone holds nothing, and nothing of it can be read.
+            if (!device.added)
+                return false;
+
             switch (device)
             {
                 case Touchscreen touchscreen:
@@ -310,6 +315,8 @@ namespace UTools.Input
             m_Actions.GestureActions.MousePosition.performed += OnMousePositionEvent;
 
             m_Actions.GestureActions.MouseScroll.performed += OnMouseScrollEvent;
+
+            InputSystem.onDeviceChange += OnDeviceChange;
         }
 
         /// <summary>
@@ -331,6 +338,15 @@ namespace UTools.Input
             m_Actions.GestureActions.MousePosition.performed -= OnMousePositionEvent;
 
             m_Actions.GestureActions.MouseScroll.performed -= OnMouseScrollEvent;
+
+            InputSystem.onDeviceChange -= OnDeviceChange;
+        }
+
+        //A device that goes away - unplugged, out of power, out of reach - lifts nothing of what it held down.
+        private void OnDeviceChange(InputDevice device, InputDeviceChange change)
+        {
+            if (change == InputDeviceChange.Removed)
+                DropStaleContacts();
         }
 
         private void OnPointerEvent(InputAction.CallbackContext context)
@@ -452,7 +468,10 @@ namespace UTools.Input
         /// <returns></returns>
         private bool CanBeHandled(InputAction.CallbackContext context)
         {
-            return m_ActiveDevice == null || m_ActiveDevice.GetType() == context.control.device.GetType();
+            //An action is cancelled as a device it is bound to is removed, and nothing of a device that is gone can be
+            //read: what it held down ends in OnDeviceChange.
+            var device = context.control.device;
+            return device.added && (m_ActiveDevice == null || m_ActiveDevice.GetType() == device.GetType());
         }
 
         #endregion
