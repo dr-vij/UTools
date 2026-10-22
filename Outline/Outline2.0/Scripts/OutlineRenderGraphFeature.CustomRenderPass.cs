@@ -28,6 +28,7 @@ namespace UTools.Outline
 
             private static readonly int BlitTexturePropertyId = Shader.PropertyToID("_BlitTexture");
             private static readonly int BlitScaleBiasPropertyId = Shader.PropertyToID("_BlitScaleBias");
+            private static readonly int BlitMipLevelPropertyId = Shader.PropertyToID("_BlitMipLevel");
             private static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
             private static readonly int BlurWidthId = Shader.PropertyToID("_BlurWidth");
             private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
@@ -79,15 +80,24 @@ namespace UTools.Outline
                 RenderCopyBack(renderGraph, resourceData, tempTextureA);
             }
 
-            private static void RenderCopyBack(RenderGraph renderGraph, UniversalResourceData resourceData, TextureHandle tempTextureA)
+            private void RenderCopyBack(RenderGraph renderGraph, UniversalResourceData resourceData, TextureHandle tempTextureA)
             {
                 using var blitBuilder = renderGraph.AddRasterRenderPass<PassData>("Copy active color", out var blitPassData);
                 blitBuilder.SetRenderAttachment(resourceData.activeColorTexture, 0);
                 blitPassData.SourceTexture = tempTextureA;
+                blitPassData.OutlineSettings = m_OutlineSettings;
                 blitBuilder.UseTexture(blitPassData.SourceTexture);
+                // Draws with the outline material, not with Blitter's default one: on the way into Play Mode the editor can
+                // render the Game view before Blitter's statics are reset, and the pipeline created by that render then runs
+                // the whole session with them null.
                 blitBuilder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
                 {
-                    Blitter.BlitTexture(context.cmd, data.SourceTexture, new Vector4(1, 1, 0, 0), 0, false);
+                    MaterialPropertyBlock.Clear();
+                    MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
+                    MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
+                    MaterialPropertyBlock.SetFloat(BlitMipLevelPropertyId, 0);
+
+                    context.cmd.DrawProcedural(Matrix4x4.identity, data.OutlineSettings.OutlineMaterial, 3, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
                 });
             }
 

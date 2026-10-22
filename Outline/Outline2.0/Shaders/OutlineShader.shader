@@ -169,5 +169,19 @@ Shader "Hidden/OutlineShader"
             #pragma fragment FragmentVerticalBlur
             ENDHLSL
         }
+
+        //Copy pass: writes the merged image back to the camera colour. The Nearest pass of the core blit shader,
+        //kept here so that the feature never draws with Blitter's default material (see RenderCopyBack).
+        Pass
+        {
+            Name "Copy"
+            ZTest Always
+            Blend Off
+
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment FragNearest
+            ENDHLSL
+        }
     }
 }
