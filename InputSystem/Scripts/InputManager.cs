@@ -61,6 +61,9 @@ namespace UTools.Input
         /// </summary>
         public Func<PointerKind, float?> DragThreshold { get; set; }
 
+        /// <summary>The pixels a pointer of the kind travels before its press becomes a drag, as it stands now.</summary>
+        public float DragThresholdOf(PointerKind kind) => DragThreshold?.Invoke(kind) ?? m_DragOrPressTriggerDistance;
+
         /// <summary>
         /// The devices the screen listens to while the manager is enabled; null, the default, is every device. With a
         /// few named, the others are not heard at all - their lifts included, so a caller that narrows the devices
