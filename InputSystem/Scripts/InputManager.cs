@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.InputSystem.Utilities;
 
 namespace UTools.Input
 {
@@ -60,6 +61,30 @@ namespace UTools.Input
         /// </summary>
         public Func<PointerKind, float?> DragThreshold { get; set; }
 
+        /// <summary>
+        /// The devices the screen listens to while the manager is enabled; null, the default, is every device. With a
+        /// few named, the others are not heard at all - their lifts included, so a caller that narrows the devices
+        /// ends what they hold first (DropAllContacts). Enabling the manager again lifts the restriction.
+        /// </summary>
+        public ReadOnlyArray<InputDevice>? Devices
+        {
+            get => m_Actions.devices;
+            set => m_Actions.devices = value;
+        }
+
+        /// <summary>
+        /// Ends every contact that is down where it is, without a press, and stops hovering: for the moment the input
+        /// is taken away from the devices (Devices), whose lifts would never arrive.
+        /// </summary>
+        public void DropAllContacts()
+        {
+            m_StaleContacts.Clear();
+            m_StaleContacts.AddRange(m_Contacts.Keys);
+            Drop(m_StaleContacts);
+            StopHovering();
+            m_HoverDevice = null;
+        }
+
         public void RegisterCamera(Camera cam)
         {
             if (!m_Cameras.Contains(cam))
@@ -87,7 +112,8 @@ namespace UTools.Input
         /// A contact goes down at a point of the screen: the same entry the devices come through, for input fed by
         /// hand. The id tells the contact from the others that are down.
         /// </summary>
-        public void PointerDown(int id, PointerKind kind, PointerButton button, Vector2 position) => Down(id, kind, button, position, null);
+        public void PointerDown(int id, PointerKind kind, PointerButton button, Vector2 position) =>
+            Down(id, kind, button, position, null);
 
         public void PointerMove(int id, Vector2 position)
         {
@@ -270,7 +296,8 @@ namespace UTools.Input
             if (m_HoverPointer == null || m_HoverPointer.Kind != kind || m_HoverPointer.Camera != cam)
             {
                 StopHovering();
-                m_HoverPointer = new ScreenPointer(MouseContactId, kind, PointerButton.Primary, cam, m_HoverPosition, 0f, Array.Empty<PointerHit>(), null);
+                m_HoverPointer = new ScreenPointer(MouseContactId, kind, PointerButton.Primary, cam, m_HoverPosition,
+                    0f, Array.Empty<PointerHit>(), null);
             }
 
             m_HoverPointer.MoveTo(m_HoverPosition);
@@ -366,7 +393,8 @@ namespace UTools.Input
         //not asked: it may be gone, and one being reset still reads what it read before.
         private void OnDeviceChange(InputDevice device, InputDeviceChange change)
         {
-            if (change is InputDeviceChange.Removed or InputDeviceChange.Disabled or InputDeviceChange.SoftReset or InputDeviceChange.HardReset)
+            if (change is InputDeviceChange.Removed or InputDeviceChange.Disabled or InputDeviceChange.SoftReset
+                or InputDeviceChange.HardReset)
                 DropContactsOf(device);
         }
 
@@ -382,7 +410,8 @@ namespace UTools.Input
             switch (context.control.device)
             {
                 case Touchscreen touchscreen when context.control.parent is TouchControl touch:
-                    OnContact(touch.touchId.ReadValue(), PointerKind.Touch, touch.press.isPressed, touch.position.ReadValue(), touchscreen);
+                    OnContact(touch.touchId.ReadValue(), PointerKind.Touch, touch.press.isPressed,
+                        touch.position.ReadValue(), touchscreen);
                     break;
                 case Pen pen:
                     SeeHovering(pen, pen.position.ReadValue());
@@ -434,15 +463,20 @@ namespace UTools.Input
             Down(MouseContactId, PointerKind.Mouse, button, position, device);
         }
 
-        private bool IsMouseContactOf(InputDevice device) => !m_ContactDevices.TryGetValue(MouseContactId, out var owner) || owner == device;
+        private bool IsMouseContactOf(InputDevice device) =>
+            !m_ContactDevices.TryGetValue(MouseContactId, out var owner) || owner == device;
 
-        private void OnRightMouseButtonDownEvent(InputAction.CallbackContext context) => OnMouseButtonEvent(context, PointerButton.Secondary, true);
+        private void OnRightMouseButtonDownEvent(InputAction.CallbackContext context) =>
+            OnMouseButtonEvent(context, PointerButton.Secondary, true);
 
-        private void OnRightMouseButtonUpEvent(InputAction.CallbackContext context) => OnMouseButtonEvent(context, PointerButton.Secondary, false);
+        private void OnRightMouseButtonUpEvent(InputAction.CallbackContext context) =>
+            OnMouseButtonEvent(context, PointerButton.Secondary, false);
 
-        private void OnMiddleMouseButtonDownEvent(InputAction.CallbackContext context) => OnMouseButtonEvent(context, PointerButton.Middle, true);
+        private void OnMiddleMouseButtonDownEvent(InputAction.CallbackContext context) =>
+            OnMouseButtonEvent(context, PointerButton.Middle, true);
 
-        private void OnMiddleMouseButtonUpEvent(InputAction.CallbackContext context) => OnMouseButtonEvent(context, PointerButton.Middle, false);
+        private void OnMiddleMouseButtonUpEvent(InputAction.CallbackContext context) =>
+            OnMouseButtonEvent(context, PointerButton.Middle, false);
 
         private void OnMouseButtonEvent(InputAction.CallbackContext context, PointerButton button, bool isDown)
         {
