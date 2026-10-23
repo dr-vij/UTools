@@ -10,7 +10,8 @@ namespace UTools
         {
             get
             {
-                if (((object)m_Instance) == null)
+                // Unity's null: an instance destroyed with its scene is looked for anew, not handed out dead.
+                if (m_Instance == null)
                 {
                     var instances = FindObjectsByType<T>(FindObjectsInactive.Include);
                     if (instances.Length == 0)
