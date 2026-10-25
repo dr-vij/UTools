@@ -75,6 +75,9 @@ namespace UTools.Input
             set => m_Actions.devices = value;
         }
 
+        /// <summary>The ids of the contacts led now, for a diagnosis of a gesture that came to nothing.</summary>
+        public IEnumerable<int> ContactIds => m_Contacts.Keys;
+
         /// <summary>
         /// Ends every contact that is down where it is, without a press, and stops hovering: for the moment the input
         /// is taken away from the devices (Devices), whose lifts would never arrive.
