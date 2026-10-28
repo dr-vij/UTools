@@ -6,39 +6,51 @@ namespace UTools.Outline
     public static class OutlineHelpers
     {
         private const int MaxWidth = 32;
+        // The blur shader reads this many pair taps at most (OutlineShader, _BlurWeights and _BlurOffsets).
+        public const int MaxBlurTaps = MaxWidth / 2;
 
-        private static float[][] m_GaussSamples;
+        private static BlurTaps[] m_BlurTaps;
 
         /// <summary>
-        /// Gets cached gauss samples for the specified outline <paramref name="width"/>.
+        /// One side of a symmetric Gauss blur read with bilinear filtering: the centre weight, then pairs of neighbouring
+        /// texels merged into one tap each - the summed weight at the offset between the two that bilinear filtering
+        /// weighs them by. The same sum as a tap per texel with half the reads.
         /// </summary>
-        public static float[] GetGaussSamples(int width)
+        public sealed class BlurTaps
         {
-            var index = Mathf.Clamp(width, 1, MaxWidth) - 1;
-            if (m_GaussSamples is null)
-                m_GaussSamples = new float[MaxWidth][];
-
-            if (m_GaussSamples[index] is null)
-                m_GaussSamples[index] = GetGaussSamples(width, null);
-
-            return m_GaussSamples[index];
+            public float CenterWeight;
+            public readonly float[] Weights = new float[MaxBlurTaps];
+            public readonly float[] Offsets = new float[MaxBlurTaps];
+            public int Count;
         }
 
         /// <summary>
-        /// Samples Gauss function for the specified <paramref name="width"/>.
+        /// Gets cached blur taps for the specified blur <paramref name="width"/>: the texels 1 to width - 1 of each side,
+        /// weighed by the Gauss function with StdDev width / 2.
         /// </summary>
-        /// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
-        private static float[] GetGaussSamples(int width, float[] samples)
+        public static BlurTaps GetBlurTaps(int width)
+        {
+            var index = Mathf.Clamp(width, 1, MaxWidth) - 1;
+            m_BlurTaps ??= new BlurTaps[MaxWidth];
+            return m_BlurTaps[index] ??= CreateBlurTaps(index + 1);
+        }
+
+        private static BlurTaps CreateBlurTaps(int width)
         {
             // NOTE: According to '3 sigma' rule there is no reason to have StdDev less then width / 3.
             // In practice blur looks best when StdDev is within range [width / 3,  width / 2].
             var stdDev = width * 0.5f;
-            if (samples is null)
-                samples = new float[MaxWidth];
-            for (var i = 0; i < width; i++)
-                samples[i] = Gauss(i, stdDev);
+            var taps = new BlurTaps { CenterWeight = Gauss(0, stdDev) };
+            for (var texel = 1; texel < width; texel += 2)
+            {
+                var weight = Gauss(texel, stdDev);
+                var next = texel + 1 < width ? Gauss(texel + 1, stdDev) : 0;
+                taps.Weights[taps.Count] = weight + next;
+                taps.Offsets[taps.Count] = (texel * weight + (texel + 1) * next) / (weight + next);
+                taps.Count++;
+            }
 
-            return samples;
+            return taps;
         }
 
         /// <summary>

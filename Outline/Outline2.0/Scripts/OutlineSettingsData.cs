@@ -11,6 +11,10 @@ namespace UTools.Outline
         [SerializeField] [Range(1, 32)] private int m_OutlineWidth = 16;
         [SerializeField] [Range(1, 32)] private int m_BlurWidth = 16;
         [SerializeField] private Color m_Color = Color.white;
+        [Tooltip("The size of the outline's blur buffers relative to the camera target, per axis. Below 1 the glow is " +
+                 "spread and blurred at that resolution and stretched back: the same look on screen for a fraction of " +
+                 "the cost, for the GPUs of headsets.")]
+        [SerializeField] [Range(0.25f, 1f)] private float m_ResolutionScale = 1f;
 
         private Material m_MaskMaterial;
         private Material m_OutlineMaterial;
@@ -22,6 +26,8 @@ namespace UTools.Outline
         public int BlurWidth => m_BlurWidth;
 
         public Color Color => m_Color;
+
+        public float ResolutionScale => m_ResolutionScale;
 
         public Material MaskMaterial => m_MaskMaterial ? m_MaskMaterial : throw new Exception($"{nameof(m_MaskMaterial)} must not be null");
 
@@ -52,6 +58,8 @@ namespace UTools.Outline
             }
         }
 
-        public float[] GetGaussSamples() => OutlineHelpers.GetGaussSamples(m_BlurWidth);
+        /// <summary>The blur taps for the blur buffers: the blur width scaled with them keeps its size on screen.</summary>
+        public OutlineHelpers.BlurTaps GetBlurTaps() =>
+            OutlineHelpers.GetBlurTaps(Mathf.Max(1, Mathf.RoundToInt(m_BlurWidth * m_ResolutionScale)));
     }
 }

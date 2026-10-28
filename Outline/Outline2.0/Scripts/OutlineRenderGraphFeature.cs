@@ -30,8 +30,9 @@ namespace UTools.Outline
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            // A render that must not carry the outline - a picture of the scene - holds it off (OutlineSuspension).
-            if (OutlineSuspension.IsSuspended)
+            // Nothing to outline (OutlineTarget), or a render that must not carry the outline - a picture of the scene -
+            // holds it off (OutlineSuspension).
+            if (!OutlineTarget.Any || OutlineSuspension.IsSuspended)
                 return;
             renderer.EnqueuePass(m_ScriptablePass);
         }
