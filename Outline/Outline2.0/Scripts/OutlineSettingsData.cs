@@ -15,6 +15,9 @@ namespace UTools.Outline
                  "spread and blurred at that resolution and stretched back: the same look on screen for a fraction of " +
                  "the cost, for the GPUs of headsets.")]
         [SerializeField] [Range(0.25f, 1f)] private float m_ResolutionScale = 1f;
+        [Tooltip("The points on the outline width's circle the glow is spread from. Fewer cost less; with the glow " +
+                 "buffers scaled down the circle is shorter in their texels and needs fewer points to stay closed.")]
+        [SerializeField] [Range(8, 32)] private int m_SpreadSamples = 32;
 
         private Material m_MaskMaterial;
         private Material m_OutlineMaterial;
@@ -28,6 +31,8 @@ namespace UTools.Outline
         public Color Color => m_Color;
 
         public float ResolutionScale => m_ResolutionScale;
+
+        public int SpreadSamples => m_SpreadSamples;
 
         public Material MaskMaterial => m_MaskMaterial ? m_MaskMaterial : throw new Exception($"{nameof(m_MaskMaterial)} must not be null");
 

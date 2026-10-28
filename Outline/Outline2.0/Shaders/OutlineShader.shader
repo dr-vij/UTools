@@ -8,6 +8,7 @@ Shader "Hidden/OutlineShader"
 
         float4 _OutlineColor = float4(1, 1, 1, 1);
         int _OutlineWidth = 5;
+        float _SpreadSamples = 32;
 
         // One side of the blur as pair taps read with bilinear filtering (OutlineHelpers.BlurTaps).
         float2 _BlurDirection;
@@ -33,9 +34,10 @@ Shader "Hidden/OutlineShader"
             float height = _OutlineWidth * _BlitTexture_TexelSize.y;
 
             const float TAU = 6.28318530;
-            const float steps = 32.0;
+            float steps = _SpreadSamples;
 
             float intensity = 0;
+            [loop]
             for (int i = 0; i < steps; i++)
             {
                 float angle = TAU * i / steps;

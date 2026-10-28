@@ -11,45 +11,65 @@ namespace UTools.Outline
 {
     public partial class OutlineRenderGraphFeature
     {
-        /// <summary>
-        /// The mask of the outlined objects at the camera's resolution; the glow spread from it and blurred in buffers
-        /// scaled by OutlineSettingsData.ResolutionScale; the glow laid over the camera colour by blending, outside the
-        /// mask. The camera colour is never read, so the pass needs no intermediate texture of its own.
-        /// </summary>
-        private class CustomRenderPass : ScriptableRenderPass
+        // The passes of OutlineShader.
+        private const int SpreadPass = 0;
+        private const int BlurPass = 1;
+        private const int CompositeShaderPass = 2;
+
+        // The drawing state shared by the passes. A nested class, not fields of the feature: the feature is a
+        // ScriptableObject, and Unity creates no object while one is constructed.
+        private static class Shared
         {
-            // The passes of OutlineShader.
-            private const int SpreadPass = 0;
-            private const int BlurPass = 1;
-            private const int CompositePass = 2;
+            internal static readonly MaterialPropertyBlock PropertyBlock = new();
 
-            private class PassData
+            internal static readonly int BlitTexturePropertyId = Shader.PropertyToID("_BlitTexture");
+            internal static readonly int BlitScaleBiasPropertyId = Shader.PropertyToID("_BlitScaleBias");
+            internal static readonly int BlitTexelSizePropertyId = Shader.PropertyToID("_BlitTexture_TexelSize");
+            internal static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
+            internal static readonly int SpreadSamplesId = Shader.PropertyToID("_SpreadSamples");
+            internal static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
+            internal static readonly int MaskTextureId = Shader.PropertyToID("_MaskTexture");
+            internal static readonly int BlurDirectionId = Shader.PropertyToID("_BlurDirection");
+            internal static readonly int BlurCenterWeightId = Shader.PropertyToID("_BlurCenterWeight");
+            internal static readonly int BlurWeightsId = Shader.PropertyToID("_BlurWeights");
+            internal static readonly int BlurOffsetsId = Shader.PropertyToID("_BlurOffsets");
+            internal static readonly int BlurTapCountId = Shader.PropertyToID("_BlurTapCount");
+        }
+
+        /// <summary>The mask and the glow of a frame, handed from the glow pass to the composite.</summary>
+        private class OutlineFrameData : ContextItem
+        {
+            internal TextureHandle Mask;
+            internal TextureHandle Glow;
+
+            public override void Reset()
             {
-                internal RendererListHandle RenderersList;
-
-                internal OutlineSettingsData OutlineSettings;
-                internal int ShaderPass;
-                internal Vector2 BlurDirection;
-
-                internal TextureHandle SourceTexture;
-                internal TextureHandle MaskTexture;
+                Mask = TextureHandle.nullHandle;
+                Glow = TextureHandle.nullHandle;
             }
+        }
 
-            private static readonly MaterialPropertyBlock MaterialPropertyBlock = new();
+        private class PassData
+        {
+            internal RendererListHandle RenderersList;
 
-            private static readonly int BlitTexturePropertyId = Shader.PropertyToID("_BlitTexture");
-            private static readonly int BlitScaleBiasPropertyId = Shader.PropertyToID("_BlitScaleBias");
-            private static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
-            private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
-            private static readonly int MaskTextureId = Shader.PropertyToID("_MaskTexture");
-            private static readonly int BlurDirectionId = Shader.PropertyToID("_BlurDirection");
-            private static readonly int BlurCenterWeightId = Shader.PropertyToID("_BlurCenterWeight");
-            private static readonly int BlurWeightsId = Shader.PropertyToID("_BlurWeights");
-            private static readonly int BlurOffsetsId = Shader.PropertyToID("_BlurOffsets");
-            private static readonly int BlurTapCountId = Shader.PropertyToID("_BlurTapCount");
+            internal OutlineSettingsData OutlineSettings;
+            internal int ShaderPass;
+            internal Vector2 BlurDirection;
+            // Set explicitly: a texture of a property block does not set it, and the value a blit of URP left in the
+            // global would follow wherever in the frame the pass runs.
+            internal Vector4 SourceTexelSize;
 
-            private readonly OutlineSettingsData m_OutlineSettings;
+            internal TextureHandle SourceTexture;
+            internal TextureHandle MaskTexture;
+        }
 
+        /// <summary>
+        /// The mask of the outlined objects at the camera's resolution, then the glow spread from it and blurred in
+        /// buffers scaled by OutlineSettingsData.ResolutionScale. Reads nothing of the scene.
+        /// </summary>
+        private class GlowPass : ScriptableRenderPass
+        {
             private static readonly List<ShaderTagId> ShaderTagIds = new()
             {
                 new("UniversalForwardOnly"),
@@ -58,14 +78,15 @@ namespace UTools.Outline
                 new("LightweightForward") //LEGACY
             };
 
-            public CustomRenderPass(OutlineSettingsData settings)
+            private readonly OutlineSettingsData m_OutlineSettings;
+
+            public GlowPass(OutlineSettingsData settings)
             {
                 m_OutlineSettings = settings;
             }
 
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
-                var resourceData = frameData.Get<UniversalResourceData>();
                 var cameraData = frameData.Get<UniversalCameraData>();
 
                 // Single-channel buffers without antialiasing: the mask and the glow hold one intensity, and the
@@ -83,20 +104,27 @@ namespace UTools.Outline
                 var glowB = UniversalRenderer.CreateRenderGraphTexture(renderGraph, glowDesc, "OutlineGlowB", false, FilterMode.Bilinear);
 
                 RenderMask(renderGraph, frameData, mask);
-                RenderFullScreen(renderGraph, "Outline Spread", SpreadPass, mask, glowA, Vector2.zero);
-                RenderFullScreen(renderGraph, "Outline Blur Horizontal", BlurPass, glowA, glowB, Vector2.right);
-                RenderFullScreen(renderGraph, "Outline Blur Vertical", BlurPass, glowB, glowA, Vector2.up);
-                RenderComposite(renderGraph, glowA, mask, resourceData.activeColorTexture);
+                RenderFullScreen(renderGraph, "Outline Spread", SpreadPass, mask, TexelSize(maskDesc), glowA, Vector2.zero);
+                RenderFullScreen(renderGraph, "Outline Blur Horizontal", BlurPass, glowA, TexelSize(glowDesc), glowB, Vector2.right);
+                RenderFullScreen(renderGraph, "Outline Blur Vertical", BlurPass, glowB, TexelSize(glowDesc), glowA, Vector2.up);
+
+                var outline = frameData.Create<OutlineFrameData>();
+                outline.Mask = mask;
+                outline.Glow = glowA;
             }
 
+            private static Vector4 TexelSize(RenderTextureDescriptor desc) =>
+                new(1f / desc.width, 1f / desc.height, desc.width, desc.height);
+
             private void RenderFullScreen(RenderGraph renderGraph, string passName, int shaderPass, TextureHandle source,
-                TextureHandle target, Vector2 blurDirection)
+                Vector4 sourceTexelSize, TextureHandle target, Vector2 blurDirection)
             {
                 using var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData);
                 passData.SourceTexture = source;
                 passData.OutlineSettings = m_OutlineSettings;
                 passData.ShaderPass = shaderPass;
                 passData.BlurDirection = blurDirection;
+                passData.SourceTexelSize = sourceTexelSize;
 
                 builder.UseTexture(source);
                 builder.SetRenderAttachment(target, 0);
@@ -105,49 +133,23 @@ namespace UTools.Outline
                 {
                     var settings = data.OutlineSettings;
 
-                    MaterialPropertyBlock.Clear();
-                    MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
-                    MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
-                    MaterialPropertyBlock.SetFloat(OutlineWidthId, settings.OutlineWidth);
+                    Shared.PropertyBlock.Clear();
+                    Shared.PropertyBlock.SetTexture(Shared.BlitTexturePropertyId, data.SourceTexture);
+                    Shared.PropertyBlock.SetVector(Shared.BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
+                    Shared.PropertyBlock.SetVector(Shared.BlitTexelSizePropertyId, data.SourceTexelSize);
+                    Shared.PropertyBlock.SetFloat(Shared.OutlineWidthId, settings.OutlineWidth);
+                    Shared.PropertyBlock.SetFloat(Shared.SpreadSamplesId, settings.SpreadSamples);
                     if (data.ShaderPass == BlurPass)
                     {
                         var taps = settings.GetBlurTaps();
-                        MaterialPropertyBlock.SetVector(BlurDirectionId, data.BlurDirection);
-                        MaterialPropertyBlock.SetFloat(BlurCenterWeightId, taps.CenterWeight);
-                        MaterialPropertyBlock.SetFloatArray(BlurWeightsId, taps.Weights);
-                        MaterialPropertyBlock.SetFloatArray(BlurOffsetsId, taps.Offsets);
-                        MaterialPropertyBlock.SetInt(BlurTapCountId, taps.Count);
+                        Shared.PropertyBlock.SetVector(Shared.BlurDirectionId, data.BlurDirection);
+                        Shared.PropertyBlock.SetFloat(Shared.BlurCenterWeightId, taps.CenterWeight);
+                        Shared.PropertyBlock.SetFloatArray(Shared.BlurWeightsId, taps.Weights);
+                        Shared.PropertyBlock.SetFloatArray(Shared.BlurOffsetsId, taps.Offsets);
+                        Shared.PropertyBlock.SetInt(Shared.BlurTapCountId, taps.Count);
                     }
 
-                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, data.ShaderPass, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
-                });
-            }
-
-            private void RenderComposite(RenderGraph renderGraph, TextureHandle glow, TextureHandle mask, TextureHandle cameraColor)
-            {
-                using var builder = renderGraph.AddRasterRenderPass<PassData>("Outline Composite", out var passData);
-                passData.SourceTexture = glow;
-                passData.MaskTexture = mask;
-                passData.OutlineSettings = m_OutlineSettings;
-
-                builder.UseTexture(glow);
-                builder.UseTexture(mask);
-                builder.SetRenderAttachment(cameraColor, 0);
-
-                // Draws with the outline material, not with Blitter's default one: on the way into Play Mode the editor can
-                // render the Game view before Blitter's statics are reset, and the pipeline created by that render then runs
-                // the whole session with them null.
-                builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
-                {
-                    var settings = data.OutlineSettings;
-
-                    MaterialPropertyBlock.Clear();
-                    MaterialPropertyBlock.SetTexture(BlitTexturePropertyId, data.SourceTexture);
-                    MaterialPropertyBlock.SetVector(BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
-                    MaterialPropertyBlock.SetTexture(MaskTextureId, data.MaskTexture);
-                    MaterialPropertyBlock.SetColor(OutlineColorId, settings.Color);
-
-                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, CompositePass, MeshTopology.Triangles, 3, 1, MaterialPropertyBlock);
+                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, data.ShaderPass, MeshTopology.Triangles, 3, 1, Shared.PropertyBlock);
                 });
             }
 
@@ -180,6 +182,56 @@ namespace UTools.Outline
                 drawSettings.overrideMaterial = m_OutlineSettings.MaskMaterial;
                 var param = new RendererListParams(universalRenderingData.cullResults, drawSettings, filterSettings);
                 return renderGraph.CreateRendererList(param);
+            }
+        }
+
+        /// <summary>
+        /// The glow laid over the camera colour by blending, outside the mask. The camera colour is never read, and the
+        /// pass keeps the camera's depth attached like the scene's passes before it, so URP can merge it into their
+        /// render pass instead of storing and reloading the colour.
+        /// </summary>
+        private class CompositePass : ScriptableRenderPass
+        {
+            private readonly OutlineSettingsData m_OutlineSettings;
+
+            public CompositePass(OutlineSettingsData settings)
+            {
+                m_OutlineSettings = settings;
+            }
+
+            public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+            {
+                if (!frameData.Contains<OutlineFrameData>())
+                    return;
+                var outline = frameData.Get<OutlineFrameData>();
+                var resourceData = frameData.Get<UniversalResourceData>();
+
+                using var builder = renderGraph.AddRasterRenderPass<PassData>("Outline Composite", out var passData);
+                passData.SourceTexture = outline.Glow;
+                passData.MaskTexture = outline.Mask;
+                passData.OutlineSettings = m_OutlineSettings;
+
+                builder.UseTexture(outline.Glow);
+                builder.UseTexture(outline.Mask);
+                builder.SetRenderAttachment(resourceData.activeColorTexture, 0);
+                if (resourceData.activeDepthTexture.IsValid())
+                    builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture, AccessFlags.Read);
+
+                // Draws with the outline material, not with Blitter's default one: on the way into Play Mode the editor can
+                // render the Game view before Blitter's statics are reset, and the pipeline created by that render then runs
+                // the whole session with them null.
+                builder.SetRenderFunc(static (PassData data, RasterGraphContext context) =>
+                {
+                    var settings = data.OutlineSettings;
+
+                    Shared.PropertyBlock.Clear();
+                    Shared.PropertyBlock.SetTexture(Shared.BlitTexturePropertyId, data.SourceTexture);
+                    Shared.PropertyBlock.SetVector(Shared.BlitScaleBiasPropertyId, new Vector4(1, 1, 0, 0));
+                    Shared.PropertyBlock.SetTexture(Shared.MaskTextureId, data.MaskTexture);
+                    Shared.PropertyBlock.SetColor(Shared.OutlineColorId, settings.Color);
+
+                    context.cmd.DrawProcedural(Matrix4x4.identity, settings.OutlineMaterial, CompositeShaderPass, MeshTopology.Triangles, 3, 1, Shared.PropertyBlock);
+                });
             }
         }
     }

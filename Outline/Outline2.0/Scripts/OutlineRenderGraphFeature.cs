@@ -11,16 +11,17 @@ namespace UTools.Outline
 
         [SerializeField] private OutlineSettingsData m_OutlineSettings = new();
 
-        private CustomRenderPass m_ScriptablePass;
+        private GlowPass m_GlowPass;
+        private CompositePass m_CompositePass;
 
         public override void Create()
         {
             m_OutlineSettings.Init(m_MaskShader, m_OutlineShader);
 
-            m_ScriptablePass = new CustomRenderPass(m_OutlineSettings)
-            {
-                renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing
-            };
+            // The glow depends only on the outlined objects, so it is made before the scene is drawn; the composite comes
+            // last, and with nothing between them that reads the camera colour URP keeps it in the scene's render pass.
+            m_GlowPass = new GlowPass(m_OutlineSettings) { renderPassEvent = RenderPassEvent.BeforeRenderingOpaques };
+            m_CompositePass = new CompositePass(m_OutlineSettings) { renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing };
         }
 
         protected override void Dispose(bool disposing)
@@ -34,7 +35,8 @@ namespace UTools.Outline
             // holds it off (OutlineSuspension).
             if (!OutlineTarget.Any || OutlineSuspension.IsSuspended)
                 return;
-            renderer.EnqueuePass(m_ScriptablePass);
+            renderer.EnqueuePass(m_GlowPass);
+            renderer.EnqueuePass(m_CompositePass);
         }
     }
 }
