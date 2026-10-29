@@ -187,8 +187,8 @@ namespace UTools.Outline
 
         /// <summary>
         /// The glow laid over the camera colour by blending, outside the mask. The camera colour is never read, and the
-        /// pass keeps the camera's depth attached like the scene's passes before it, so URP can merge it into their
-        /// render pass instead of storing and reloading the colour.
+        /// pass attaches the camera's targets like the scene's passes before it (ScenePassAttachments), so URP can merge
+        /// it into their render pass instead of storing and reloading the colour.
         /// </summary>
         private class CompositePass : ScriptableRenderPass
         {
@@ -204,7 +204,6 @@ namespace UTools.Outline
                 if (!frameData.Contains<OutlineFrameData>())
                     return;
                 var outline = frameData.Get<OutlineFrameData>();
-                var resourceData = frameData.Get<UniversalResourceData>();
 
                 using var builder = renderGraph.AddRasterRenderPass<PassData>("Outline Composite", out var passData);
                 passData.SourceTexture = outline.Glow;
@@ -213,9 +212,7 @@ namespace UTools.Outline
 
                 builder.UseTexture(outline.Glow);
                 builder.UseTexture(outline.Mask);
-                builder.SetRenderAttachment(resourceData.activeColorTexture, 0);
-                if (resourceData.activeDepthTexture.IsValid())
-                    builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture, AccessFlags.Read);
+                Rendering.ScenePassAttachments.Attach(builder, frameData);
 
                 // Draws with the outline material, not with Blitter's default one: on the way into Play Mode the editor can
                 // render the Game view before Blitter's statics are reset, and the pipeline created by that render then runs

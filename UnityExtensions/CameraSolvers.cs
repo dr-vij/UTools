@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -49,6 +47,32 @@ public static class MathUtilities
             new(max.x, max.y, min.z),
             max
         };
+    }
+
+    /// <summary>
+    /// The box of the eight corners of a box carried by a matrix: a renderer's or collider's local box in another frame.
+    /// </summary>
+    public static Bounds Transformed(this Bounds local, Matrix4x4 toTarget)
+    {
+        var center = local.center;
+        var extents = local.extents;
+        var result = new Bounds(toTarget.MultiplyPoint3x4(center - extents), Vector3.zero);
+        for (var corner = 1; corner < 8; corner++)
+            result.Encapsulate(toTarget.MultiplyPoint3x4(center + Vector3.Scale(extents,
+                new Vector3((corner & 1) == 0 ? -1f : 1f, (corner & 2) == 0 ? -1f : 1f, (corner & 4) == 0 ? -1f : 1f))));
+        return result;
+    }
+
+    /// <summary>Grows a box to hold another one; an empty box becomes that one.</summary>
+    public static void EncapsulateOrStart(ref Bounds? into, Bounds box)
+    {
+        if (into is { } bounds)
+        {
+            bounds.Encapsulate(box);
+            into = bounds;
+        }
+        else
+            into = box;
     }
 }
 

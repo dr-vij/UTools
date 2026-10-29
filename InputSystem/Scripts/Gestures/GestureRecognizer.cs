@@ -526,7 +526,7 @@ namespace UTools.Input
                 ? (pair.First.Pointer, pair.Second.Pointer)
                 : (pair.Second.Pointer, pair.First.Pointer);
             return new TwoPointersDragInteractionEventArgs(first.ScreenPosition, first.PreviousScreenPosition, second.ScreenPosition,
-                second.PreviousScreenPosition, first.Camera) { Pointer = first };
+                second.PreviousScreenPosition, first.Camera) { Pointer = first, SecondaryPointer = second };
         }
 
         private static int MouseButtonId(PointerButton button)

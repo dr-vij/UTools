@@ -18,6 +18,15 @@ namespace UTools.Outline
         [Tooltip("The points on the outline width's circle the glow is spread from. Fewer cost less; with the glow " +
                  "buffers scaled down the circle is shorter in their texels and needs fewer points to stay closed.")]
         [SerializeField] [Range(8, 32)] private int m_SpreadSamples = 32;
+        [Tooltip("The stencil test of the composite: the glow is laid only where the stencil of the camera's target, " +
+                 "masked by the read mask, compares to the reference. Always - everywhere.")]
+        [SerializeField] private CompareFunction m_StencilCompare = CompareFunction.Always;
+        [SerializeField] [Range(0, 255)] private int m_StencilReference;
+        [SerializeField] [Range(0, 255)] private int m_StencilReadMask = 255;
+
+        private static readonly int StencilCompareId = Shader.PropertyToID("_StencilComp");
+        private static readonly int StencilReferenceId = Shader.PropertyToID("_StencilRef");
+        private static readonly int StencilReadMaskId = Shader.PropertyToID("_StencilReadMask");
 
         private Material m_MaskMaterial;
         private Material m_OutlineMaterial;
@@ -45,6 +54,9 @@ namespace UTools.Outline
 
             m_MaskMaterial = CoreUtils.CreateEngineMaterial(maskShader);
             m_OutlineMaterial = CoreUtils.CreateEngineMaterial(outlineShader);
+            m_OutlineMaterial.SetInt(StencilCompareId, (int)m_StencilCompare);
+            m_OutlineMaterial.SetInt(StencilReferenceId, m_StencilReference);
+            m_OutlineMaterial.SetInt(StencilReadMaskId, m_StencilReadMask);
             return true;
         }
 

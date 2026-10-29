@@ -8,6 +8,8 @@ namespace UTools.Input
         Mouse,
         Pen,
         Touch,
+        /// <summary>A tracked hand: a pinch is its contact.</summary>
+        Hand,
     }
 
     public enum PointerButton

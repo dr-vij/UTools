@@ -1,5 +1,13 @@
 Shader "Hidden/OutlineShader"
 {
+    Properties
+    {
+        // The stencil test of the composite (OutlineSettingsData); Always by default.
+        [HideInInspector] _StencilComp("Stencil Compare", Int) = 8
+        [HideInInspector] _StencilRef("Stencil Reference", Int) = 0
+        [HideInInspector] _StencilReadMask("Stencil Read Mask", Int) = 255
+    }
+
     SubShader
     {
         HLSLINCLUDE
@@ -114,6 +122,12 @@ Shader "Hidden/OutlineShader"
         {
             Name "Composite"
             ZTest Always
+            Stencil
+            {
+                Ref [_StencilRef]
+                ReadMask [_StencilReadMask]
+                Comp [_StencilComp]
+            }
             Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
 
             HLSLPROGRAM

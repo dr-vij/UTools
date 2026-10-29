@@ -90,6 +90,9 @@ namespace UTools.Input
     {
         public Vector2 SecondaryPointerPosition { get; private set; }
         public Vector2 SecondaryPointerPrevPosition { get; private set; }
+
+        /// <summary>The other pointer of the pair: Pointer is the one with the lower id.</summary>
+        public InteractionPointer SecondaryPointer { get; internal set; }
         public Vector2 PointersCenter => (PointerPosition + SecondaryPointerPosition) * 0.5f;
         public Vector2 PointerCenterPrev => (PointerPrevPosition + SecondaryPointerPrevPosition) * 0.5f;
 
