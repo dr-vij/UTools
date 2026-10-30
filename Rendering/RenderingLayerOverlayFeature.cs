@@ -11,7 +11,8 @@ namespace UTools.Rendering
     /// Draws the opaque renderers of a rendering layer once more over the scene with one material (RenderingLayerOverlay
     /// marks them), over the camera's depth: an additive material lights them up where they are seen. Nothing is drawn
     /// while no overlay is on. The pass reads nothing of the camera colour and attaches the targets as the scene's passes
-    /// do (ScenePassAttachments), so URP keeps it in the scene's render pass.
+    /// do (ScenePassAttachments), so URP keeps it in the scene's render pass. Nothing is drawn while no overlay of the
+    /// layer is on.
     /// </summary>
     public sealed class RenderingLayerOverlayFeature : ScriptableRendererFeature
     {
@@ -30,7 +31,7 @@ namespace UTools.Rendering
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (RenderingLayerOverlay.Any && m_Material != null)
+            if (RenderingLayerOverlay.IsAnyOn(m_RenderingLayer.value) && m_Material != null)
                 renderer.EnqueuePass(m_Pass);
         }
 

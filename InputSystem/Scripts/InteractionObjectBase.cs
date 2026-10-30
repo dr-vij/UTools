@@ -26,6 +26,20 @@ namespace UTools.Input
         /// </summary>
         public bool AllowsConcurrentGestures { get; set; }
 
+        /// <summary>
+        /// The object is pressed by a touch: a source with fingertips (the hands of a headset) presses it when a tip
+        /// comes up to it, without a pinch or a click. A button sets it; a body, a knob or a cable is never poked.
+        /// </summary>
+        public bool IsPokeable { get; set; }
+
+        /// <summary>
+        /// The object takes no drag for itself - locked, or a fixture - and leaves the drags that start on it to what is
+        /// beneath or to the pointer's fallback. A source with coarse pointers reads it: what such a pointer meets on the
+        /// object within its slop - a control standing on it - is what the pointer means, since the object itself cannot
+        /// be taken.
+        /// </summary>
+        public bool LeavesDrags { get; set; }
+
         public bool HasEventSubscription(InteractionEvent evt)
         {
             return m_AllSubscriptions.TryGetValue(evt, out var subscriptions) && subscriptions.Length != 0;

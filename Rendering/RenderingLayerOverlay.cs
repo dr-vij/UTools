@@ -14,6 +14,8 @@ namespace UTools.Rendering
     public sealed class RenderingLayerOverlay : IDisposable
     {
         private static int s_On;
+        // How many overlays of each layer are on.
+        private static readonly Dictionary<uint, int> s_OnByLayer = new();
         // How many overlays that are on hold each renderer with each layer.
         private static readonly Dictionary<(Renderer, uint), int> s_Holders = new();
 
@@ -23,6 +25,9 @@ namespace UTools.Rendering
 
         /// <summary>Whether any overlay is on now.</summary>
         public static bool Any => s_On > 0;
+
+        /// <summary>Whether any overlay of this rendering layer is on now.</summary>
+        public static bool IsAnyOn(uint renderingLayerMask) => s_OnByLayer.TryGetValue(renderingLayerMask, out var on) && on > 0;
 
         /// <param name="renderingLayer">The name of a rendering layer of the project (Tags and Layers).</param>
         /// <param name="renderers">The renderers the overlay marks; read each time it goes on or off.</param>
@@ -43,6 +48,8 @@ namespace UTools.Rendering
                     return;
                 m_IsOn = value;
                 s_On += value ? 1 : -1;
+                s_OnByLayer.TryGetValue(m_Mask, out var on);
+                s_OnByLayer[m_Mask] = on + (value ? 1 : -1);
                 foreach (var renderer in m_Renderers)
                     if (renderer != null)
                         Hold(renderer, value);
