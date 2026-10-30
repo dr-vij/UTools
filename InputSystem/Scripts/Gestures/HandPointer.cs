@@ -52,11 +52,12 @@ namespace UTools.Input
         /// <summary>
         /// A pinch within reach of something. It is a drag once the pinch moves farther than
         /// <paramref name="dragThreshold"/>, metres, or rolls farther than <paramref name="rollThreshold"/>, degrees; a
-        /// roll threshold of zero or less leaves the roll out.
+        /// roll threshold of zero or less leaves the roll out. A pinch within reach of the wall but of nothing on it
+        /// has no hits and a <paramref name="fallback"/> receiver, as a pointer of the screen on the empty wall has.
         /// </summary>
         public static HandPointer Near(int id, Pose gripPose, Pose pose, float dragThreshold, float rollThreshold,
-            IReadOnlyList<PointerHit> hits) =>
-            new(id, gripPose, pose, true, dragThreshold, rollThreshold > 0f ? dragThreshold / rollThreshold : 0f, hits, null);
+            IReadOnlyList<PointerHit> hits, InteractionObjectBase fallback = null) =>
+            new(id, gripPose, pose, true, dragThreshold, rollThreshold > 0f ? dragThreshold / rollThreshold : 0f, hits, fallback);
 
         /// <summary>A pinch along the aim ray of the hand. It is a drag once the ray turns farther than <paramref name="dragAngle"/>, degrees.</summary>
         public static HandPointer Ray(int id, Pose gripPose, Pose aimPose, float dragAngle, IReadOnlyList<PointerHit> hits,
