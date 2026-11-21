@@ -72,13 +72,13 @@ namespace UTools.Input
 
         public Vector2 ScreenPosition { get; protected set; }
 
-        public Vector2 PreviousScreenPosition { get; protected set; }
+        public virtual Vector2 PreviousScreenPosition { get; protected set; }
 
         /// <summary>
         /// Where the travel is counted from: where the pointer went down, or where it was when another pointer joined
         /// or left it.
         /// </summary>
-        public Vector2 TrackStartScreenPosition { get; protected set; }
+        public virtual Vector2 TrackStartScreenPosition { get; protected set; }
 
         /// <summary>
         /// The interaction objects under the pointer where it went down, the nearest first, in the order of its source.
@@ -108,10 +108,17 @@ namespace UTools.Input
     }
 
     /// <summary>
-    /// A pointer on the screen of a camera: its travel is the distance in pixels.
+    /// A pointer on the screen of a camera: its travel is the distance in pixels. Where the travel is counted from and
+    /// where the pointer was a step before are kept as lines of the camera, read into the pixels of the screen as it is
+    /// when they are read: a pixel means another place once the screen changes its size (a window resized), and a
+    /// pointer that holds on to what it pressed while the picture is laid out anew would travel as far as the picture
+    /// moved under it, and its press would become a drag.
     /// </summary>
     public sealed class ScreenPointer : InteractionPointer
     {
+        private Vector3 m_TrackStart;
+        private Vector3 m_Previous;
+
         public ScreenPointer(int id, PointerKind kind, PointerButton button, Camera camera, Vector2 position, float dragThreshold,
             IReadOnlyList<PointerHit> hits, InteractionObjectBase fallback) : base(id, kind, button, dragThreshold, hits, fallback)
         {
@@ -120,6 +127,18 @@ namespace UTools.Input
             PreviousScreenPosition = position;
             TrackStartScreenPosition = position;
             UpdatePose();
+        }
+
+        public override Vector2 TrackStartScreenPosition
+        {
+            get => FromCamera(m_TrackStart);
+            protected set => m_TrackStart = ToCamera(value);
+        }
+
+        public override Vector2 PreviousScreenPosition
+        {
+            get => FromCamera(m_Previous);
+            protected set => m_Previous = ToCamera(value);
         }
 
         public override float Travel => Vector2.Distance(ScreenPosition, TrackStartScreenPosition);
@@ -136,6 +155,18 @@ namespace UTools.Input
             ScreenPosition = position;
             UpdatePose();
         }
+
+        // The point of the near plane under the point of the screen, in the camera's own frame - on the camera's line
+        // through it, for a perspective camera and an orthographic one alike; the pixels themselves where there is no
+        // camera.
+        private Vector3 ToCamera(Vector2 position) =>
+            Camera == null
+                ? position
+                : Camera.transform.InverseTransformPoint(Camera.ScreenToWorldPoint(new Vector3(position.x, position.y, Camera.nearClipPlane),
+                    Camera.MonoOrStereoscopicEye.Mono));
+
+        private Vector2 FromCamera(Vector3 line) =>
+            Camera == null ? line : Camera.WorldToScreenPoint(Camera.transform.TransformPoint(line), Camera.MonoOrStereoscopicEye.Mono);
 
         private void UpdatePose()
         {
